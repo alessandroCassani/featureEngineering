@@ -10,15 +10,38 @@ def max_min_commonValue(df):
         print("max common value: " + str(most_common_value) + "\n")
 
 def print_null_duplicates_values(df):
-    null_counts = df.isnull().sum()
+    total_rows = len(df)
+    
     print("Null Value Counts:")
+    null_counts = df.isnull().sum()
     print(null_counts)
-
-    # Count duplicates
-    duplicate_counts = df.duplicated().sum()
+    
+    print("\nPercentage of Null Values:")
+    null_percentage = (null_counts / total_rows) * 100
+    print(null_percentage)
+    
     print("\nDuplicate Counts:")
+    duplicate_counts = df.duplicated().sum()
     print(duplicate_counts)
     
+    print("\nPercentage of Duplicate Values:")
+    duplicate_percentage = (duplicate_counts / total_rows) * 100
+    print(duplicate_percentage)
+    
+    for column in df.columns:
+        null_count = df[column].isnull().sum()
+        null_percentage = (null_count / total_rows) * 100
+        duplicate_count = df[column].duplicated().sum()
+        duplicate_percentage = (duplicate_count / total_rows) * 100
+        
+        print(f"\nFeature: {column}")
+        print(f"Null Count: {null_count}")
+        print(f"Null Percentage: {null_percentage:.2f}%")
+        print(f"Duplicate Count: {duplicate_count}")
+        print(f"Duplicate Percentage: {duplicate_percentage:.2f}%")
+
+
+
     
 def check_categorical_values (df):
     categorical_features = ['sex', 'hypertension', 'heart_disease', 'ever_married', 'work_type', 'Residence_type', 'smoking_status']
@@ -29,3 +52,4 @@ def check_categorical_values (df):
             print(df[abnormal_values])
         else:
             print('correct values')
+            

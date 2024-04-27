@@ -53,3 +53,19 @@ def check_categorical_values (df):
         else:
             print('correct values')
             
+            
+def check_negative_values (df, feature):
+    abnormal_values = (df[feature] < 0)
+    if abnormal_values.any():
+        print(f'abnormal values present in {feature} feature')
+        print(df[abnormal_values])
+    else:
+        print(f'correct values in {feature} feature')
+        
+            
+
+def check_age_married_consistency(df):
+    invalid_rows_index = df[(df['age'] < 16) & (df['ever_married'] == 1)].index
+    df = df.drop(invalid_rows_index, axis=0)
+    print(invalid_rows_index.sum)
+    print("Rows with age < 16 and ever_married == 1 have been dropped.")

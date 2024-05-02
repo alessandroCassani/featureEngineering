@@ -31,27 +31,30 @@ def print_null_duplicates_values(df):
     for column in df.columns:
         null_count = df[column].isnull().sum()
         null_percentage = (null_count / total_rows) * 100
-        duplicate_count = df[column].duplicated().sum()
-        duplicate_percentage = (duplicate_count / total_rows) * 100
         
         print(f"\nFeature: {column}")
         print(f"Null Count: {null_count}")
         print(f"Null Percentage: {null_percentage:.2f}%")
-        print(f"Duplicate Count: {duplicate_count}")
-        print(f"Duplicate Percentage: {duplicate_percentage:.2f}%")
-
-
 
     
-def check_categorical_values (df):
+def check_categorical_values(df):
     categorical_features = ['sex', 'hypertension', 'heart_disease', 'ever_married', 'work_type', 'Residence_type', 'smoking_status']
+    flag = True
     for feature in categorical_features:
-        abnormal_values = (df[feature] != 0) & (df[feature] != 1)
-        if abnormal_values.any():
-            print('abnormal values present')
-            print(df[abnormal_values])
+        if feature != 'work_type':
+            abnormal_values = (df[feature] != 0) & (df[feature] != 1)
         else:
-            print('correct values')
+            abnormal_values = (df[feature] < 0) | (df[feature] > 4)
+        if abnormal_values.any():
+            flag = False
+            print(f"Abnormal values found in feature '{feature}':")
+            print(df[abnormal_values][[feature]])
+            print("\n")
+           
+    if flag == False:
+        print('Abnormal values present')
+    else:
+        print('All values are correct')
             
             
 def check_negative_values (df, feature):
@@ -66,14 +69,14 @@ def check_negative_values (df, feature):
 
 def check_age_married_consistency(df):
     invalid_rows_index = df[(df['age'] < 16) & (df['ever_married'] == 1)].index
-    df = df.drop(invalid_rows_index, axis=0)
+    #df = df.drop(invalid_rows_index, axis=0)
     print('number of incosistencies: \n')
     print(len(invalid_rows_index))
-    print("Rows with age < 16 and ever_married == 1 have been dropped")
+    #print("Rows with age < 16 and ever_married == 1 have been dropped")
     
 def check_age_workType_consistency(df):
-    invalid_rows_index = df[(df['age'] < 18) & ((df['work_type'] != 0)) | (df['work_type'] != 1)].index
-    df = df.drop(invalid_rows_index, axis=0)
+    invalid_rows_index = df[(df['age'] < 18) & ((df['work_type'] != 0) | (df['work_type'] != 1))].index
+    #df = df.drop(invalid_rows_index, axis=0)
     print('number of incosistencies: \n')
     print(len(invalid_rows_index))
-    print("Rows with age < 16 and work_type different from 0 or 1 dropped")
+    #print("Rows with age < 16 and work_type different from 0 or 1 dropped")

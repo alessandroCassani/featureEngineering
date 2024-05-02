@@ -1,3 +1,7 @@
+import numpy as np
+import seaborn as sns
+import matplotlib.pyplot as plt
+
 def max_min_commonValue(df):
     for column in df.columns:
         min_value = df[column].min()
@@ -80,3 +84,25 @@ def check_age_workType_consistency(df):
     print('number of incosistencies: \n')
     print(len(invalid_rows_index))
     #print("Rows with age < 16 and work_type different from 0 or 1 dropped")
+    
+def detect_outliers_zscore(df, threshold):
+    z_scores = np.abs((df - df.mean()) / df.std())
+    return z_scores > threshold
+
+def visualize_outliers(df):
+    threshold=3
+    numerical_features = ['age', 'avg_glucose_level','bmi']
+    for feature in numerical_features:
+        outliers = detect_outliers_zscore(df[feature], threshold)
+        if outliers.any():
+            plt.figure(figsize=(8, 4))
+            sns.histplot(df[feature], kde=True, color='blue', bins=30)
+            plt.title(f'Histogram of {feature}')
+            plt.xlabel(feature)
+            plt.ylabel('Frequency')
+            plt.axvline(x=df[feature][outliers].min(), color='red', linestyle='--', label='Outliers')
+            plt.axvline(x=df[feature][outliers].max(), color='red', linestyle='--')
+            plt.legend()
+            plt.show()
+        else:
+            print('no outliers detected')

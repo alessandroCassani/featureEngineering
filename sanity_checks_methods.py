@@ -118,3 +118,10 @@ def drop_negative_values(df, feature):
     df_c = df.drop(df[abnormal_values].index)
     return df_c
     
+def dropping_age_married_consistency(df):
+    invalid_rows_index = df[(df['age'] < 16) & (df['ever_married'] == 1)].index
+    df = df.drop(invalid_rows_index, axis=0)
+    #print('number of incosistencies: \n')
+    #print(len(invalid_rows_index))
+    #print("Rows with age < 16 and ever_married == 1 have been dropped")
+    return df

@@ -6,6 +6,8 @@ from time import time
 import numpy as np
 from sklearn.tree import plot_tree
 from sklearn.metrics import roc_curve, roc_auc_score, confusion_matrix, ConfusionMatrixDisplay
+from sklearn.model_selection import KFold
+from sklearn.metrics import accuracy_score
 
 def train_decision_tree_model(df):
     # Splitting the dataset into features and target variable
@@ -71,6 +73,8 @@ def train_decision_tree_model(df):
     plot_feature_importance_decision_tree(best_tree_classifier, X)
     plot_roc_curve(y_test, best_tree_classifier, X_test)
     plot_confusion_matrix(y_test, y_test_pred)
+    
+    return best_tree_classifier
 
 
 def plot_decision_tree(tree_model, feature_names, class_names=['0', '1']):
@@ -115,3 +119,21 @@ def plot_confusion_matrix(y_test, y_test_pred):
     labels = [1, 0]
     disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=labels)
     disp.plot()
+    
+    
+def k_fold_cross_validation_dt(model, X_train, y_train, n_fold=10):
+    folds = KFold(n_splits=n_fold, shuffle=True)
+
+    accuracy_k_fold_dt = []
+
+    for n_fold, (train_idx, valid_idx) in enumerate(folds.split(X_train, y_train)):
+        X_train_fold, X_valid_fold = X_train.iloc[train_idx], X_train.iloc[valid_idx]
+        y_train_fold, y_valid_fold = y_train.iloc[train_idx], y_train.iloc[valid_idx]
+
+        model.fit(X_train_fold, y_train_fold)
+        # Make predictions on the validation set and calculate accuracy
+        y_valid_pred = model.predict(X_valid_fold)
+        accuracy_k_fold_dt.append(accuracy_score(y_valid_fold, y_valid_pred))
+
+    print("Accuracy for each fold:", accuracy_k_fold_dt)
+    print("Mean accuracy:", np.mean(accuracy_k_fold_dt))

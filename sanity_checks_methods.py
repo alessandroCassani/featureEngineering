@@ -15,6 +15,7 @@ def max_min_commonValue(df):
 
 def print_null_duplicates_values(df):
     total_rows = len(df)
+    print(total_rows)
     
     print("Null Value Counts:")
     null_counts = df.isnull().sum()
@@ -69,7 +70,6 @@ def check_negative_values (df, feature):
     else:
         print(f'correct values in {feature} feature')
         
-            
 
 def check_age_married_consistency(df):
     invalid_rows_index = df[(df['age'] < 16) & (df['ever_married'] == 1)].index
@@ -106,3 +106,13 @@ def visualize_outliers(df):
             plt.show()
         else:
             print('no outliers detected')
+
+def drop_negative_age(df):
+    df[df['age'] >= 0]
+
+def add_null_values(df, column_name, percentage):
+    num_nulls = int(len(df) * (percentage / 100))
+    indices_to_nullify = np.random.choice(df.index, size=num_nulls, replace=False)
+    df.loc[indices_to_nullify, column_name] = np.nan
+
+

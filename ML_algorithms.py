@@ -5,6 +5,7 @@ from sklearn.metrics import classification_report, roc_auc_score
 from time import time
 import numpy as np
 from sklearn.tree import plot_tree
+from sklearn.metrics import roc_curve, roc_auc_score, confusion_matrix, ConfusionMatrixDisplay
 
 def train_decision_tree_model(df):
     # Splitting the dataset into features and target variable
@@ -68,6 +69,8 @@ def train_decision_tree_model(df):
     
     plot_decision_tree(random_search.best_estimator_, feature_names=X_train.columns)
     plot_feature_importance_decision_tree(best_tree_classifier, X)
+    plot_roc_curve(y_test, best_tree_classifier, X_test)
+    plot_confusion_matrix(y_test, y_test_pred)
 
 
 def plot_decision_tree(tree_model, feature_names, class_names=['0', '1']):
@@ -90,3 +93,25 @@ def plot_feature_importance_decision_tree(best_tree_classifier, X):
     plt.ylabel('Feature')
     plt.title('Feature Importance Plot')
     plt.show()
+    
+    
+def plot_roc_curve(y_test, classifier, X_test):
+    y_pred_prob = classifier.predict_proba(X_test)[:, 1]
+    fpr, tpr, thresholds = roc_curve(y_test, y_pred_prob)
+    roc_auc = roc_auc_score(y_test, y_pred_prob)
+    plt.plot(fpr, tpr, label='ROC curve (area = %0.2f)' % roc_auc)
+    plt.plot([0, 1], [0, 1], 'k--')
+    plt.xlim([0.0, 1.0])
+    plt.ylim([0.0, 1.05])
+    plt.xlabel('False Positive Rate')
+    plt.ylabel('True Positive Rate')
+    plt.title('Receiver Operating Characteristic (ROC) Curve')
+    plt.legend(loc="lower right")
+    plt.show()
+    print("AUC Score:", roc_auc)
+    
+def plot_confusion_matrix(y_test, y_test_pred):
+    cm = confusion_matrix(y_test, y_test_pred)
+    labels = [1, 0]
+    disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=labels)
+    disp.plot()

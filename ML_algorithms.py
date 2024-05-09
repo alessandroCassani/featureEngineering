@@ -121,9 +121,11 @@ def plot_confusion_matrix(y_test, y_test_pred):
     disp.plot()
     
     
-def k_fold_cross_validation_dt(model, df, n_fold=10):
+def k_fold_cross_validation_dt(model, df):
     X = df.drop('stroke', axis=1)
     y = df['stroke']
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+    n_fold=10
     
     folds = KFold(n_splits=n_fold, shuffle=True)
 

@@ -67,18 +67,7 @@ def train_decision_tree_model(df):
     print("Tempo impiegato per l'Addestramento:", dt_training_time, "secondi")
     
     plot_decision_tree(random_search.best_estimator_, feature_names=X_train.columns)
-
-
-
-
-
-
-
-
-
-
-
-
+    plot_feature_importance_decision_tree(best_tree_classifier, X)
 
 
 def plot_decision_tree(tree_model, feature_names, class_names=['0', '1']):
@@ -87,4 +76,17 @@ def plot_decision_tree(tree_model, feature_names, class_names=['0', '1']):
     # Get the labels of each node and display them
     text = tree_plot[0]
     print("Node Labels:\n", text)
+    plt.show()
+    
+def plot_feature_importance_decision_tree(best_tree_classifier, X):
+    importance = best_tree_classifier.feature_importances_
+    # Sort feature importance
+    sorted_idx = np.argsort(importance)
+    # Plot feature importance
+    plt.figure(figsize=(10, 6))
+    plt.barh(range(len(importance)), importance[sorted_idx], align='center')
+    plt.yticks(range(len(importance)), [X.columns[i] for i in sorted_idx])
+    plt.xlabel('Feature Importance')
+    plt.ylabel('Feature')
+    plt.title('Feature Importance Plot')
     plt.show()

@@ -8,6 +8,9 @@ from sklearn.tree import plot_tree
 from sklearn.metrics import roc_curve, roc_auc_score, confusion_matrix, ConfusionMatrixDisplay
 from sklearn.model_selection import KFold
 from sklearn.metrics import accuracy_score
+from sklearn.ensemble import HistGradientBoostingClassifier
+from scipy.stats import randint
+from sklearn.model_selection import learning_curve
 
 def train_decision_tree_model(df):
     # Splitting the dataset into features and target variable
@@ -142,3 +145,93 @@ def k_fold_cross_validation_dt(model, df):
 
     print("Accuracy for each fold:", accuracy_k_fold_dt)
     print("Mean accuracy:", np.mean(accuracy_k_fold_dt))
+
+    
+def train_hist_gradient_boosting_model(df):
+    X = df.drop('stroke', axis=1)
+    y = df['stroke']
+
+    # Splitting the dataset into the Training set and Test set
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+
+    # Define the parameter grid
+    param_grid = {
+        'max_iter': randint(50, 500),
+        'learning_rate': [0.01, 0.1, 0.2, 0.3],
+        'max_depth': randint(3, 10),
+        'min_samples_leaf': randint(1, 20),
+        'l2_regularization': [0.0, 0.1, 0.2, 0.3],
+    }
+
+    # Create a HistGradientBoostingClassifier
+    hgb_classifier = HistGradientBoostingClassifier()
+
+    # Initialize RandomizedSearchCV
+    random_search = RandomizedSearchCV(
+        hgb_classifier,
+        param_distributions=param_grid,
+        n_iter=50,
+        cv=5,
+        scoring='recall',
+        verbose=2,
+        n_jobs=-1
+    )
+
+    start_time = time()
+    random_search.fit(X_train, y_train)
+    end_time = time()
+    search_time = end_time - start_time
+    
+    print(f'search time: {search_time}')
+
+    # Print the best parameters
+    print("Best parameters found: ", random_search.best_params_)
+
+    # Print the best score on training data
+    print("Best score on training data: ", random_search.best_score_)
+
+    # Get the best model
+    best_model = random_search.best_estimator_
+
+    # Predictions on training set
+    train_predictions = best_model.predict(X_train)
+
+    # Print classification report for training set
+    print("Classification Report on Training Set:")
+    print(classification_report(y_train, train_predictions))
+
+    # Predictions on test set
+    test_predictions = best_model.predict(X_test)
+
+    # Print classification report for test set
+    print("Classification Report on Test Set:")
+    print(classification_report(y_test, test_predictions))
+    
+    plot_roc_curve(y_test, best_model, X_test)
+    plot_confusion_matrix(y_test, test_predictions)
+    plot_learning_curve(HistGradientBoostingClassifier(), X_train, y_train, cv=5)
+
+    return best_model
+
+def plot_learning_curve(estimator, X, y, cv=5, train_sizes=np.linspace(0.1, 1.0, 10)):
+    train_sizes, train_scores, test_scores = learning_curve(
+        estimator, X, y, cv=cv, n_jobs=-1, train_sizes=train_sizes)
+
+    train_scores_mean = np.mean(train_scores, axis=1)
+    train_scores_std = np.std(train_scores, axis=1)
+    test_scores_mean = np.mean(test_scores, axis=1)
+    test_scores_std = np.std(test_scores, axis=1)
+
+    plt.figure(figsize=(10, 6))
+    plt.fill_between(train_sizes, train_scores_mean - train_scores_std,
+                     train_scores_mean + train_scores_std, alpha=0.1, color="r")
+    plt.fill_between(train_sizes, test_scores_mean - test_scores_std,
+                     test_scores_mean + test_scores_std, alpha=0.1, color="g")
+    plt.plot(train_sizes, train_scores_mean, 'o-', color="r", label="Training score")
+    plt.plot(train_sizes, test_scores_mean, 'o-', color="g", label="Cross-validation score")
+    plt.xlabel("Training examples")
+    plt.ylabel("Score")
+    plt.legend(loc="best")
+    plt.title("Learning Curves")
+    plt.show()
+    

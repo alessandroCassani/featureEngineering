@@ -121,7 +121,24 @@ def drop_negative_values(df, feature):
 def dropping_age_married_consistency(df):
     invalid_rows_index = df[(df['age'] < 16) & (df['ever_married'] == 1)].index
     df = df.drop(invalid_rows_index, axis=0)
-    #print('number of incosistencies: \n')
-    #print(len(invalid_rows_index))
-    #print("Rows with age < 16 and ever_married == 1 have been dropped")
     return df
+
+def drop_age_workType_consistency(df):
+    invalid_rows_index = df[(df['age'] < 18) & ((df['work_type'] != 0) | (df['work_type'] != 1))].index
+    df = df.drop(invalid_rows_index, axis=0)
+    return df
+
+def drop_outliers(df):
+    threshold = 3
+    numerical_features = ['age', 'avg_glucose_level', 'bmi']
+    while True:
+        outliers_found = False
+        for feature in numerical_features:
+            outliers = detect_outliers_zscore(df[feature], threshold)
+            if outliers.any():
+                df = df[~outliers]
+                outliers_found = True
+        if not outliers_found:
+            break
+    return df
+

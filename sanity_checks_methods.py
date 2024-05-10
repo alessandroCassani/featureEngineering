@@ -1,6 +1,7 @@
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
+import pandas as pd
 
 def max_min_commonValue(df):
     for column in df.columns:
@@ -107,6 +108,40 @@ def visualize_outliers(df):
         else:
             print('no outliers detected')
 
+def drop_null_values(df):
+    df.dropna(inplace=True)
+    #df.dropna()
+    return df
+
+def drop_negative_values(df, feature):
+    abnormal_values = (df[feature] < 0)
+    df_c = df.drop(df[abnormal_values].index)
+    return df_c
+    
+def dropping_age_married_consistency(df):
+    invalid_rows_index = df[(df['age'] < 16) & (df['ever_married'] == 1)].index
+    df = df.drop(invalid_rows_index, axis=0)
+    return df
+
+def drop_age_workType_consistency(df):
+    invalid_rows_index = df[(df['age'] < 18) & ((df['work_type'] != 0) | (df['work_type'] != 1))].index
+    df = df.drop(invalid_rows_index, axis=0)
+    return df
+
+def drop_outliers(df):
+    threshold = 3
+    numerical_features = ['age', 'avg_glucose_level', 'bmi']
+    while True:
+        outliers_found = False
+        for feature in numerical_features:
+            outliers = detect_outliers_zscore(df[feature], threshold)
+            if outliers.any():
+                df = df[~outliers]
+                outliers_found = True
+        if not outliers_found:
+            break
+    return df
+
 def drop_negative_age(df):
     df[df['age'] >= 0]
 
@@ -114,5 +149,3 @@ def add_null_values(df, column_name, percentage):
     num_nulls = int(len(df) * (percentage / 100))
     indices_to_nullify = np.random.choice(df.index, size=num_nulls, replace=False)
     df.loc[indices_to_nullify, column_name] = np.nan
-
-

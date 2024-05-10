@@ -142,3 +142,10 @@ def drop_outliers(df):
             break
     return df
 
+def drop_negative_age(df):
+    df[df['age'] >= 0]
+
+def add_null_values(df, column_name, percentage):
+    num_nulls = int(len(df) * (percentage / 100))
+    indices_to_nullify = np.random.choice(df.index, size=num_nulls, replace=False)
+    df.loc[indices_to_nullify, column_name] = np.nan

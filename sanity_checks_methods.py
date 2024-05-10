@@ -16,6 +16,7 @@ def max_min_commonValue(df):
 
 def print_null_duplicates_values(df):
     total_rows = len(df)
+    print(total_rows)
     
     print("Null Value Counts:")
     null_counts = df.isnull().sum()
@@ -70,7 +71,6 @@ def check_negative_values (df, feature):
     else:
         print(f'correct values in {feature} feature')
         
-            
 
 def check_age_married_consistency(df):
     invalid_rows_index = df[(df['age'] < 16) & (df['ever_married'] == 1)].index

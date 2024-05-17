@@ -149,3 +149,52 @@ def add_null_values(df, column_name, percentage):
     num_nulls = int(len(df) * (percentage / 100))
     indices_to_nullify = np.random.choice(df.index, size=num_nulls, replace=False)
     df.loc[indices_to_nullify, column_name] = np.nan
+
+def print_duplicates_values(df):
+    total_rows = len(df)
+    print(total_rows)
+    
+    print("\nDuplicate Counts:")
+    duplicate_counts = df.duplicated().sum()
+    print(duplicate_counts)
+    
+    print("\nPercentage of Duplicate Values:")
+    duplicate_percentage = (duplicate_counts / total_rows) * 100
+    print(duplicate_percentage)
+
+import pandas as pd
+import numpy as np
+
+# duplicating rows for a avg_glucose
+def add_duplicates_values(df, feature, percentage):
+    # Calculate the number of unique values to duplicate (10% of the unique values)
+    unique_values = df[feature].unique()
+    num_values_to_duplicate = int(len(unique_values) * (percentage / 100))
+    
+    # Randomly select the percentage of the unique feature values
+    values_to_duplicate = np.random.choice(unique_values, num_values_to_duplicate, replace=False)
+    
+    # Find rows corresponding to these selected feature values
+    rows_to_duplicate = df[df[feature].isin(values_to_duplicate)]
+    
+    # Concatenate the duplicated rows to the original DataFrame
+    df_with_duplicates = pd.concat([df, rows_to_duplicate], ignore_index=True)
+    
+    return df_with_duplicates
+
+def duplicate_rows(df, percent):
+    num_duplicates = int(len(df) * percent / 100)
+    duplicated_rows = np.random.choice(df.index, size=num_duplicates, replace=True)
+    duplicated_data = df.loc[duplicated_rows]
+    df = pd.concat([df, duplicated_data], ignore_index=True)
+    return df
+
+def print_duplicate_rows(df):
+    duplicate_counts = df.duplicated().sum()
+
+    # Stampa le righe duplicate
+    if duplicate_rows!=0:
+        print(duplicate_counts)
+        print('ok')
+    else:
+        print("No duplicate rows found.")

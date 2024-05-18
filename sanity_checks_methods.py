@@ -165,22 +165,17 @@ def print_duplicates_values(df):
 import pandas as pd
 import numpy as np
 
+# in base a una feature specifica, viene trovato il massimo valore in quella colonna, da essa si prendono solo 
+# le righe con il valore massimo e si seleziona il 10% da aggiungere al dataframe
+
 # duplicating rows for a avg_glucose
 def add_duplicates_values(df, feature, percentage):
-    # Calculate the number of unique values to duplicate (10% of the unique values)
-    unique_values = df[feature].unique()
-    num_values_to_duplicate = int(len(unique_values) * (percentage / 100))
-    
-    # Randomly select the percentage of the unique feature values
-    values_to_duplicate = np.random.choice(unique_values, num_values_to_duplicate, replace=False)
-    
-    # Find rows corresponding to these selected feature values
-    rows_to_duplicate = df[df[feature].isin(values_to_duplicate)]
-    
-    # Concatenate the duplicated rows to the original DataFrame
-    df_with_duplicates = pd.concat([df, rows_to_duplicate], ignore_index=True)
-    
-    return df_with_duplicates
+    max_feature_value = df[feature].max()
+    rows_with_max_feature = df[df[feature] == max_feature_value]
+    num_rows_to_duplicate = max(1, int((percentage/100) * len(rows_with_max_feature)))
+    rows_to_duplicate = rows_with_max_feature.head(num_rows_to_duplicate)
+    df = pd.concat([df, rows_to_duplicate], ignore_index=True)
+    return df
 
 def duplicate_rows(df, percent):
     num_duplicates = int(len(df) * percent / 100)
@@ -188,13 +183,3 @@ def duplicate_rows(df, percent):
     duplicated_data = df.loc[duplicated_rows]
     df = pd.concat([df, duplicated_data], ignore_index=True)
     return df
-
-def print_duplicate_rows(df):
-    duplicate_counts = df.duplicated().sum()
-
-    # Stampa le righe duplicate
-    if duplicate_rows!=0:
-        print(duplicate_counts)
-        print('ok')
-    else:
-        print("No duplicate rows found.")

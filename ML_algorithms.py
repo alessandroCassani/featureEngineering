@@ -232,6 +232,6 @@ def plot_learning_curve(estimator, X, y, cv=5, train_sizes=np.linspace(0.1, 1.0,
     plt.xlabel("Training examples")
     plt.ylabel("Score")
     plt.legend(loc="best")
-    plt.title("Learning Curves")
+    plt.title('Learning Curve (HistGradientBoosting)')
     plt.show()
     

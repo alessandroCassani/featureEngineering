@@ -145,6 +145,22 @@ def k_fold_cross_validation_dt(model, df):
 
     print("Accuracy for each fold:", accuracy_k_fold_dt)
     print("Mean accuracy:", np.mean(accuracy_k_fold_dt))
+    
+    # Calculate the 95% confidence interval
+    confidence_interval = st.t.interval(alpha=0.95, df=len(accuracy_k_fold_dt)-1, loc=np.mean(accuracy_k_fold_dt), scale=st.sem(accuracy_k_fold_dt))
+    print("95% confidence interval:", confidence_interval)
+    
+    # Plot the accuracy for each fold with the mean and confidence interval
+    plt.figure(figsize=(10, 6))
+    plt.plot(range(1, n_fold + 1), accuracy_k_fold_dt, marker='o', linestyle='-', label='Fold Accuracy')
+    plt.axhline(y=mean_accuracy, color='r', linestyle='--', label=f'Mean Accuracy: {mean_accuracy:.3f}')
+    plt.fill_between(range(1, n_fold + 1), confidence_interval[0], confidence_interval[1], color='b', alpha=0.2, label='95% Confidence Interval')
+    plt.xlabel('Fold')
+    plt.ylabel('Accuracy')
+    plt.title('K-Fold Cross-Validation Accuracy')
+    plt.legend()
+    plt.grid(True)
+    plt.show()
 
     
 def train_hist_gradient_boosting_model(df):

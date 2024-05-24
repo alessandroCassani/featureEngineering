@@ -11,13 +11,20 @@ from sklearn.metrics import accuracy_score
 from sklearn.ensemble import HistGradientBoostingClassifier
 from scipy.stats import randint
 from sklearn.model_selection import learning_curve
+import scipy.stats as st  
 
-def train_decision_tree_model(df):
+def train_decision_tree_model(df, test_df):
     # Splitting the dataset into features and target variable
     X = df.drop('stroke', axis=1)
     y = df['stroke']
+    
+    X_test_df = test_df.drop('stroke', axis=1)
+    y_test_df = test_df['stroke']
+    
+    # Splitting the dataset into the Training set and Test set for test df
+    X_train_df_test, X_test_df_test, y_train_df_test, y_test_df_test = train_test_split(X_test_df, y_test_df, test_size=0.3, random_state=42)
 
-    # Splitting the dataset into the Training set and Test set
+    # Splitting the dataset into the Training set and Test set for training df
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
 
     # Creating the decision tree classifier
@@ -56,8 +63,8 @@ def train_decision_tree_model(df):
     dt_training_time = end_time_training - start_time_training
 
     # Predictions on the training and test sets
-    y_train_pred = best_tree_classifier.predict(X_train)
-    y_test_pred = best_tree_classifier.predict(X_test)
+    y_train_pred = best_tree_classifier.predict(X_train_df_test)
+    y_test_pred = best_tree_classifier.predict(X_test_df_test)
 
     # Printing performance on the training set
     print("\nPrestazioni sul Set di Addestramento:")
@@ -147,22 +154,22 @@ def k_fold_cross_validation_dt(model, df):
     print("Mean accuracy:", np.mean(accuracy_k_fold_dt))
     
     # Calculate the 95% confidence interval
-    confidence_interval = st.t.interval(alpha=0.95, df=len(accuracy_k_fold_dt)-1, loc=np.mean(accuracy_k_fold_dt), scale=st.sem(accuracy_k_fold_dt))
+    confidence_interval = st.t.interval(0.95, df=len(accuracy_k_fold_dt)-1, loc=np.mean(accuracy_k_fold_dt), scale=st.sem(accuracy_k_fold_dt))
     print("95% confidence interval:", confidence_interval)
     
     # Plot the accuracy for each fold with the mean and confidence interval
-    plt.figure(figsize=(10, 6))
-    plt.plot(range(1, n_fold + 1), accuracy_k_fold_dt, marker='o', linestyle='-', label='Fold Accuracy')
-    plt.axhline(y=mean_accuracy, color='r', linestyle='--', label=f'Mean Accuracy: {mean_accuracy:.3f}')
-    plt.fill_between(range(1, n_fold + 1), confidence_interval[0], confidence_interval[1], color='b', alpha=0.2, label='95% Confidence Interval')
-    plt.xlabel('Fold')
-    plt.ylabel('Accuracy')
-    plt.title('K-Fold Cross-Validation Accuracy')
+    mean_accuracy = np.mean(accuracy_k_fold_dt)  # Calculate mean accuracy
+    # Plot the mean and confidence interval
+    plt.errorbar(1, mean_accuracy, yerr=(confidence_interval[1] - confidence_interval[0])/2, fmt='o')
+    # Add labels and title
+    plt.xlabel('Group')
+    plt.ylabel('Value')
+    plt.title('Mean with Confidence Interval')
+    # Show the plot
     plt.legend()
-    plt.grid(True)
     plt.show()
 
-    
+
 def train_hist_gradient_boosting_model(df):
     X = df.drop('stroke', axis=1)
     y = df['stroke']

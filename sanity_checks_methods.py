@@ -1,6 +1,7 @@
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
+import scipy.stats as st
 
 def max_min_commonValue(df):
     for column in df.columns:

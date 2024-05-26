@@ -56,17 +56,17 @@ def train_decision_tree_model(df_dirty, df_original):
     end_time_training = time()
     dt_training_time = end_time_training - start_time_training
 
-    # Predictions on the validation and test sets
-    y_val_pred = best_tree_classifier.predict(X_test_dirty)
-    y_test_pred = best_tree_classifier.predict(X_test_original)
+    # Predictions on test sets
+    y_test_pred_dirty = best_tree_classifier.predict(X_test_dirty)
+    y_test_pred_original = best_tree_classifier.predict(X_test_original)
 
     # Printing performance on the validation set
     print("\nPrestazioni sul Set di Addestramento:")
-    print(classification_report(y_test_dirty, y_val_pred))
+    print(classification_report(y_test_dirty, y_test_pred_dirty))
 
     # Printing performance on the test set
     print("\nPrestazioni sul Set di Test:")
-    print(classification_report(y_test_original, y_test_pred))
+    print(classification_report(y_test_original, y_test_pred_original))
 
     # Printing the best parameters and time taken for hyperparameter search and training
     print("\nMigliori Parametri:", best_params)
@@ -74,13 +74,11 @@ def train_decision_tree_model(df_dirty, df_original):
     print("Tempo impiegato per l'Addestramento:", dt_training_time, "secondi")
     
     plot_decision_tree(random_search.best_estimator_, feature_names=X_train_dirty.columns)
-    plot_feature_importance_decision_tree(best_tree_classifier, X)
+    plot_feature_importance_decision_tree(best_tree_classifier, X_train_dirty)
     plot_roc_curve(y_test_original, best_tree_classifier, X_test_original)
-    plot_confusion_matrix(y_test_original, y_test_pred)
+    plot_confusion_matrix(y_test_original, y_test_pred_original)
 
     return best_tree_classifier
-
-
 
 def plot_decision_tree(tree_model, feature_names, class_names=['0', '1']):
     plt.figure(figsize=(20, 10))

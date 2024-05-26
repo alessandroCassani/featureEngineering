@@ -148,7 +148,9 @@ def drop_negative_age(df):
 def add_null_values(df, column_name, percentage):
     num_nulls = int(len(df) * (percentage / 100))
     indices_to_nullify = np.random.choice(df.index, size=num_nulls, replace=False)
+    original_values = df.loc[indices_to_nullify, column_name].copy()
     df.loc[indices_to_nullify, column_name] = np.nan
+    return indices_to_nullify, original_values
 
 def print_duplicates_values(df):
     total_rows = len(df)
@@ -158,12 +160,16 @@ def print_duplicates_values(df):
     duplicate_percentage = (duplicate_counts / total_rows) * 100
     print("Percentage of Duplicate Values: ", duplicate_percentage)
 
-def duplicate_values(df, feature, percentage):
-    num_duplicates = int(len(df) * (percentage / 100))
-    indices_to_duplicate = np.random.choice(df.index, size=num_duplicates, replace=True)
-    duplicated_rows = df.loc[indices_to_duplicate] 
-    duplicated_rows[feature] = duplicated_rows[feature].copy()  # Copia i valori già presenti
-    df = pd.concat([df, duplicated_rows], ignore_index=True)
+def insert_duplicates_values(df, feature, percentage):
+    num_duplicates = int(len(df) * (percentage/100))
+
+    indices_to_drop = np.random.choice(df.index, size=num_duplicates, replace=False)
+    df = df.drop(indices_to_drop)
+    df = df.reset_index(drop=True)
+    
+    indices_to_duplicates = np.random.choice(df.index, size=num_duplicates, replace=False)
+    duplicated_data = df.loc[indices_to_duplicates]
+    df = pd.concat([df, duplicated_data], ignore_index=True)
     return df
 
 def duplicate_rows(dataset, percent):
@@ -172,3 +178,14 @@ def duplicate_rows(dataset, percent):
     duplicated_data = dataset.loc[duplicated_rows]
     dataset = pd.concat([dataset, duplicated_data], ignore_index=True)
     return dataset
+
+def duplicates_values(df, percentage):
+    num_duplicates = int(len(df) * (percentage / 100))
+    
+    # Seleziona indici casuali per duplicare righe
+    indices_to_duplicate = np.random.choice(df.index, size=num_duplicates, replace=True)
+    duplicated_data = df.loc[indices_to_duplicate]
+    
+    # Aggiunge le righe duplicate al DataFrame
+    df_with_duplicates = pd.concat([df, duplicated_data], ignore_index=True)
+    return df_with_duplicates

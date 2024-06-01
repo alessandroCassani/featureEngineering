@@ -74,9 +74,9 @@ def train_decision_tree_model(df_dirty, df_original):
     print(classification_report(y_test_original, y_test_pred_original))
 
     # Printing the best parameters and time taken for hyperparameter search and training
-    print("\nMigliori Parametri:", best_params)
-    print("Tempo impiegato per la Ricerca degli Iperparametri:", hyperparameter_search_time, "secondi")
-    print("Tempo impiegato per l'Addestramento:", dt_training_time, "secondi")
+    print("\nbest hyperparameter:", best_params)
+    print("hyperparameter's time search:", hyperparameter_search_time, "seconds")
+    print("training time needed:", dt_training_time, "seconds")
     
     plot_decision_tree(random_search.best_estimator_, feature_names=X_train_dirty.columns)
     plot_feature_importance_decision_tree(best_tree_classifier, X_train_dirty)

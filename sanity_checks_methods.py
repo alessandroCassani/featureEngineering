@@ -160,32 +160,9 @@ def print_duplicates_values(df):
     duplicate_percentage = (duplicate_counts / total_rows) * 100
     print("Percentage of Duplicate Values: ", duplicate_percentage)
 
-def insert_duplicates_values(df, feature, percentage):
-    num_duplicates = int(len(df) * (percentage/100))
-
-    indices_to_drop = np.random.choice(df.index, size=num_duplicates, replace=False)
-    df = df.drop(indices_to_drop)
-    df = df.reset_index(drop=True)
-    
-    indices_to_duplicates = np.random.choice(df.index, size=num_duplicates, replace=False)
-    duplicated_data = df.loc[indices_to_duplicates]
-    df = pd.concat([df, duplicated_data], ignore_index=True)
-    return df
-
-def duplicate_rows(dataset, percent):
-    num_duplicates = int(len(dataset) * percent / 100)
-    duplicated_rows = np.random.choice(dataset.index, size=num_duplicates, replace=True)
-    duplicated_data = dataset.loc[duplicated_rows]
-    dataset = pd.concat([dataset, duplicated_data], ignore_index=True)
-    return dataset
-
 def duplicates_values(df, percentage):
     num_duplicates = int(len(df) * (percentage / 100))
-    
-    # Seleziona indici casuali per duplicare righe
     indices_to_duplicate = np.random.choice(df.index, size=num_duplicates, replace=True)
     duplicated_data = df.loc[indices_to_duplicate]
-    
-    # Aggiunge le righe duplicate al DataFrame
     df_with_duplicates = pd.concat([df, duplicated_data], ignore_index=True)
     return df_with_duplicates

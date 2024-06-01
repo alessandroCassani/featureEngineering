@@ -166,3 +166,22 @@ def duplicates_values(df, percentage):
     duplicated_data = df.loc[indices_to_duplicate]
     df_with_duplicates = pd.concat([df, duplicated_data], ignore_index=True)
     return df_with_duplicates
+
+def add_outlier(df, feature, percentage):
+    return df
+
+def visualize_outliers_specific(df, feature):
+    threshold=3
+    outliers = detect_outliers_zscore(df[feature], threshold)
+    if outliers.any():
+        plt.figure(figsize=(8, 4))
+        sns.histplot(df[feature], kde=True, color='blue', bins=30)
+        plt.title(f'Histogram of {feature}')
+        plt.xlabel(feature)
+        plt.ylabel('Frequency')
+        plt.axvline(x=df[feature][outliers].min(), color='red', linestyle='--', label='Outliers')
+        plt.axvline(x=df[feature][outliers].max(), color='red', linestyle='--')
+        plt.legend()
+        plt.show()
+    else:
+        print('no outliers detected')

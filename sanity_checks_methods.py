@@ -71,20 +71,24 @@ def check_negative_values (df, feature):
     else:
         print(f'correct values in {feature} feature')
         
-
 def check_age_married_consistency(df):
     invalid_rows_index = df[(df['age'] < 16) & (df['ever_married'] == 1)].index
-    #df = df.drop(invalid_rows_index, axis=0)
     print('number of incosistencies: \n')
     print(len(invalid_rows_index))
-    #print("Rows with age < 16 and ever_married == 1 have been dropped")
+    
+def drop_inconsistencies(df):
+        invalid_rows_index = df[(df['age'] < 16) & (df['ever_married'] == 1)].index
+        df = df.drop(invalid_rows_index, axis=0)
+        invalid_rows_index = df[(df['age'] < 16) & ((df['work_type'] != 0) | (df['work_type'] != 1))].index
+        df = df.drop(invalid_rows_index, axis=0)
+        df = df[df['sex'] >= 0]
+        df = df[df['age'] >= 0]
     
 def check_age_workType_consistency(df):
     invalid_rows_index = df[(df['age'] < 16) & ((df['work_type'] != 0) | (df['work_type'] != 1))].index
-    #df = df.drop(invalid_rows_index, axis=0)
     print('number of incosistencies: \n')
     print(len(invalid_rows_index))
-    #print("Rows with age < 16 and work_type different from 0 or 1 dropped")
+    print("Rows with age < 16 and work_type different from 0 or 1 dropped")
     
 def detect_outliers_zscore(df, threshold):
     z_scores = np.abs((df - df.mean()) / df.std())

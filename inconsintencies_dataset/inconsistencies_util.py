@@ -11,19 +11,19 @@ def introduce_age_married_inconsistencies(df, percentage):
     df.loc[rows_to_modify, 'age'] = np.random.randint(0, 16, size=num_rows_to_modify)
     df.loc[rows_to_modify, 'ever_married'] = 1
     
-    return original_values
+    return original_values, rows_to_modify
 
 def introduce_age_workType_inconsistencies(df, percentage):
     num_rows_to_modify = int(len(df) * percentage / 100)
     
     rows_to_modify = df.sample(n=num_rows_to_modify, random_state=42).index
-    
+
     original_values = df.loc[rows_to_modify, ['age', 'work_type']].copy()
     
     df.loc[rows_to_modify, 'age'] = np.random.randint(0, 18, size=num_rows_to_modify)
     df.loc[rows_to_modify, 'work_type'] = np.random.randint(2, df['work_type'].max() + 1, size=num_rows_to_modify)
     
-    return original_values
+    return original_values, rows_to_modify
 
 
 def introduce_negative_ages(df, percentage):
@@ -33,7 +33,6 @@ def introduce_negative_ages(df, percentage):
     original_values = df.loc[rows_to_modify, 'age'].copy()
     df.loc[rows_to_modify, 'age'] = -1
     return rows_to_modify, original_values
-    
     
     
 def check_negative_values (df, feature):

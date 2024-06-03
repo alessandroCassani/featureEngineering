@@ -44,6 +44,7 @@ def restore_original_values(df, original_values_dict):
     for index, original_values in original_values_dict.items():
         for col, value in original_values.items():
             df.at[index, col] = value
+    return df
 
 def visualize_inconsistencies(df):
     total_inconsistency_percentage = check_age_married_consistency(df) + check_age_workType_consistency(df) + check_negative_age_values(df)

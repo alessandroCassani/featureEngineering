@@ -114,13 +114,12 @@ def visualize_outliers(df):
 
 def drop_null_values(df):
     df.dropna(inplace=True)
-    #df.dropna()
     return df
 
 def drop_negative_values(df, feature):
     abnormal_values = (df[feature] < 0)
-    df_c = df.drop(df[abnormal_values].index)
-    return df_c
+    df = df.drop(df[abnormal_values].index)
+    return df
 
 def drop_outliers(df):
     threshold = 3
@@ -158,13 +157,6 @@ def print_duplicates_values(df):
     duplicate_percentage = (duplicate_counts / total_rows) * 100
     print(duplicate_percentage)
 
-import pandas as pd
-import numpy as np
-
-# in base a una feature specifica, viene trovato il massimo valore in quella colonna, da essa si prendono solo 
-# le righe con il valore massimo e si seleziona il 10% da aggiungere al dataframe
-
-# duplicating rows for a avg_glucose
 def add_duplicates_values(df, feature, percentage):
     max_feature_value = df[feature].max()
     rows_with_max_feature = df[df[feature] == max_feature_value]

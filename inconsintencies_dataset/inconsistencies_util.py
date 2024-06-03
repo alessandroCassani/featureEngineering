@@ -46,9 +46,9 @@ def restore_original_values(df, original_values_dict):
             df.at[index, col] = value
 
 def visualize_inconsistencies(df):
-    check_age_married_consistency(df)
-    check_age_workType_consistency(df) 
-    check_negative_age_values(df)
+    total_inconsistency_percentage = check_age_married_consistency(df) + check_age_workType_consistency(df) + check_negative_age_values(df)
+    print('\nTOTAL INCONSISTENCY PERCENTAGE')
+    print(total_inconsistency_percentage)
     
 def check_negative_age_values(df):
     abnormal_values = df['age'] < 0
@@ -62,6 +62,8 @@ def check_negative_age_values(df):
     else:
         print('All values in age feature are correct.')
         
+    return percentage_abnormal_values
+        
 
 def check_age_married_consistency(df):
     invalid_rows_index = df[(df['age'] < 16) & (df['ever_married'] == 1)].index
@@ -69,10 +71,12 @@ def check_age_married_consistency(df):
     percentage_inconsistencies = (num_inconsistencies / len(df)) * 100
     print(f'Number of inconsistencies in age and married features: {num_inconsistencies}')
     print(f'Percentage of inconsistencies in age and married features: {percentage_inconsistencies:.2f}%')
+    return percentage_inconsistencies
 
 def check_age_workType_consistency(df):
-    invalid_rows_index = df[(df['age'] < 18) & (df['work_type'] != 0) & (df['work_type'] != 1)].index
+    invalid_rows_index = df[(df['age'] < 16) & (df['work_type'] != 0) & (df['work_type'] != 1)].index
     num_inconsistencies = len(invalid_rows_index)
     percentage_inconsistencies = (num_inconsistencies / len(df)) * 100
     print(f'Number of inconsistencies in age and workType features: {num_inconsistencies}')
     print(f'Percentage of inconsistencies in age and workType features: {percentage_inconsistencies:.2f}%')
+    return percentage_inconsistencies

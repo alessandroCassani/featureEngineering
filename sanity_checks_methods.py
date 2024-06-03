@@ -121,16 +121,6 @@ def drop_negative_values(df, feature):
     abnormal_values = (df[feature] < 0)
     df_c = df.drop(df[abnormal_values].index)
     return df_c
-    
-def dropping_age_married_consistency(df):
-    invalid_rows_index = df[(df['age'] < 16) & (df['ever_married'] == 1)].index
-    df = df.drop(invalid_rows_index, axis=0)
-    return df
-
-def drop_age_workType_consistency(df):
-    invalid_rows_index = df[(df['age'] < 18) & ((df['work_type'] != 0) | (df['work_type'] != 1))].index
-    df = df.drop(invalid_rows_index, axis=0)
-    return df
 
 def drop_outliers(df):
     threshold = 3

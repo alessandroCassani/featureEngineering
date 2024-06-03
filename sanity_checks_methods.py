@@ -62,7 +62,6 @@ def check_categorical_values(df):
     else:
         print('All values are correct')
             
-            
 def check_negative_values (df, feature):
     abnormal_values = (df[feature] < 0)
     if abnormal_values.any():

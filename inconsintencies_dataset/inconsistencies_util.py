@@ -1,8 +1,8 @@
 import pandas as pd
 import numpy as np
 
-def introduce_inconsistencies(df, percentage):
-    single_percentage = percentage / 3
+def introduce_inconsistencies(df, single_percentage):
+    #single_percentage = percentage / 3
     age_married_originals = introduce_age_married_inconsistencies(df, single_percentage)
     age_workType_originals = introduce_age_workType_inconsistencies(df, single_percentage)
     negative_ages_originals = introduce_negative_ages(df, single_percentage)

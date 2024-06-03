@@ -108,6 +108,40 @@ def visualize_outliers(df):
         else:
             print('no outliers detected')
 
+def drop_null_values(df):
+    df.dropna(inplace=True)
+    #df.dropna()
+    return df
+
+def drop_negative_values(df, feature):
+    abnormal_values = (df[feature] < 0)
+    df_c = df.drop(df[abnormal_values].index)
+    return df_c
+    
+def dropping_age_married_consistency(df):
+    invalid_rows_index = df[(df['age'] < 16) & (df['ever_married'] == 1)].index
+    df = df.drop(invalid_rows_index, axis=0)
+    return df
+
+def drop_age_workType_consistency(df):
+    invalid_rows_index = df[(df['age'] < 18) & ((df['work_type'] != 0) | (df['work_type'] != 1))].index
+    df = df.drop(invalid_rows_index, axis=0)
+    return df
+
+def drop_outliers(df):
+    threshold = 3
+    numerical_features = ['age', 'avg_glucose_level', 'bmi']
+    while True:
+        outliers_found = False
+        for feature in numerical_features:
+            outliers = detect_outliers_zscore(df[feature], threshold)
+            if outliers.any():
+                df = df[~outliers]
+                outliers_found = True
+        if not outliers_found:
+            break
+    return df
+
 def drop_negative_age(df):
     df[df['age'] >= 0]
 
@@ -117,3 +151,37 @@ def add_null_values(df, column_name, percentage):
     original_values = df.loc[indices_to_nullify, column_name].copy()
     df.loc[indices_to_nullify, column_name] = np.nan
     return indices_to_nullify, original_values
+
+def print_duplicates_values(df):
+    total_rows = len(df)
+    print(total_rows)
+    
+    print("\nDuplicate Counts:")
+    duplicate_counts = df.duplicated().sum()
+    print(duplicate_counts)
+    
+    print("\nPercentage of Duplicate Values:")
+    duplicate_percentage = (duplicate_counts / total_rows) * 100
+    print(duplicate_percentage)
+
+import pandas as pd
+import numpy as np
+
+# in base a una feature specifica, viene trovato il massimo valore in quella colonna, da essa si prendono solo 
+# le righe con il valore massimo e si seleziona il 10% da aggiungere al dataframe
+
+# duplicating rows for a avg_glucose
+def add_duplicates_values(df, feature, percentage):
+    max_feature_value = df[feature].max()
+    rows_with_max_feature = df[df[feature] == max_feature_value]
+    num_rows_to_duplicate = max(1, int((percentage/100) * len(rows_with_max_feature)))
+    rows_to_duplicate = rows_with_max_feature.head(num_rows_to_duplicate)
+    df = pd.concat([df, rows_to_duplicate], ignore_index=True)
+    return df
+
+def duplicate_rows(df, percent):
+    num_duplicates = int(len(df) * percent / 100)
+    duplicated_rows = np.random.choice(df.index, size=num_duplicates, replace=True)
+    duplicated_data = df.loc[duplicated_rows]
+    df = pd.concat([df, duplicated_data], ignore_index=True)
+    return df

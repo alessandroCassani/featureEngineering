@@ -80,7 +80,7 @@ def check_age_married_consistency(df):
     #print("Rows with age < 16 and ever_married == 1 have been dropped")
     
 def check_age_workType_consistency(df):
-    invalid_rows_index = df[(df['age'] < 18) & ((df['work_type'] != 0) | (df['work_type'] != 1))].index
+    invalid_rows_index = df[(df['age'] < 16) & ((df['work_type'] != 0) | (df['work_type'] != 1))].index
     #df = df.drop(invalid_rows_index, axis=0)
     print('number of incosistencies: \n')
     print(len(invalid_rows_index))

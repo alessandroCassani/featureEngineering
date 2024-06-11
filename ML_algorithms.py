@@ -34,7 +34,7 @@ def train_decision_tree_model(df_dirty, df_original):
         'max_features': ['sqrt', 'log2', None],
         'min_samples_split': np.arange(2, 51, 2),
         'min_samples_leaf': np.arange(1, 9),
-        'max_depth': [None, 5, 10, 15, 20]
+        'max_depth': [None, 5, 10, 15]
     }
 
     # Using RandomizedSearchCV for efficient hyperparameter search
@@ -64,10 +64,6 @@ def train_decision_tree_model(df_dirty, df_original):
     # Valutazione delle prestazioni sul set di addestramento
     print("Classification Report on Training Set:")
     print(classification_report(y_train_dirty, y_train_pred_dirty))
-
-    # Printing performance on the test set dirty
-    print("Classification Report on Test Set - dirty:")
-    print(classification_report(y_test_dirty, y_test_pred_dirty))
 
     # Printing performance on the test set original
     print("Classification Report on Test Set - original:")

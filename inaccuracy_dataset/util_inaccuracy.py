@@ -5,6 +5,7 @@ def modify_values(column, dataset, percentage):
     num_rows = int(len(dataset) * (percentage / 100))
     rows_to_modify = random.sample(range(len(dataset)), num_rows)
     rows_modified = 0
+    original_dataset = dataset.copy()
     if column == "work_type": 
         for i, value in enumerate(column):
             if i not in rows_to_modify:
@@ -36,5 +37,5 @@ def modify_values(column, dataset, percentage):
                 dataset.loc[i, column.name] = modified_value
                 rows_modified += 1
 
-    return dataset
+    return dataset, original_dataset
 

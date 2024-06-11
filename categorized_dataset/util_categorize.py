@@ -1,7 +1,6 @@
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder
 
-
 def bmi_category(bmi):
     if bmi < 18.5:
         return 'Underweight'

@@ -58,7 +58,6 @@ def train_decision_tree_model(df_dirty, df_original):
 
     # Predictions on test sets
     y_train_pred_dirty = best_tree_classifier.predict(X_train_dirty)
-    y_test_pred_dirty = best_tree_classifier.predict(X_test_dirty)
     y_test_pred_original = best_tree_classifier.predict(X_test_original)
 
     # Valutazione delle prestazioni sul set di addestramento
@@ -135,7 +134,7 @@ def k_fold_cross_validation_dt(model, df):
 
     accuracy_k_fold_dt = []
 
-    for n_fold, (train_idx, valid_idx) in enumerate(folds.split(X_train, y_train)):
+    for n_fold, (train_idx, valid_idx) in enumerate(folds.split(X_test, y_test)):
         X_train_fold, X_valid_fold = X_train.iloc[train_idx], X_train.iloc[valid_idx]
         y_train_fold, y_valid_fold = y_train.iloc[train_idx], y_train.iloc[valid_idx]
 

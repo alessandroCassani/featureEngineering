@@ -15,15 +15,16 @@ import scipy.stats as st
 
 def train_decision_tree_model(df_dirty, df_original):
     # Splitting the dataset con duplicati into features and target variable
-    X = df_dirty.drop('stroke', axis=1)
-    y = df_dirty['stroke']
-
-    # Splitting the dataset originale into features and target variable
-    X_test_original = df_original.drop('stroke', axis=1)
-    y_test_original = df_original['stroke']
+    X_dirty = df_dirty.drop('stroke', axis=1)
+    y_dirty = df_dirty['stroke']
+    
+    X_original = df_original.drop('stroke', axis=1)
+    y_original = df_original['stroke']
 
     # Splitting the dirty dataset into training set and test set (with 30% testing)
-    X_train_dirty, X_test_dirty, y_train_dirty, y_test_dirty = train_test_split(X, y, test_size=0.3, random_state=42)
+    X_train_dirty, X_test_dirty, y_train_dirty, y_test_dirty = train_test_split(X_dirty, y_dirty, test_size=0.3, random_state=42)
+    
+    X_train_original, X_test_original, y_train_original, y_test_original = train_test_split(X_original, y_original, test_size=0.3, random_state=42)
 
     # Creating the decision tree classifier
     tree_classifier = DecisionTreeClassifier(random_state=42)
@@ -56,7 +57,7 @@ def train_decision_tree_model(df_dirty, df_original):
     end_time_training = time()
     dt_training_time = end_time_training - start_time_training
 
-    # Predictions on test sets
+    # Predictions 
     y_train_pred_dirty = best_tree_classifier.predict(X_train_dirty)
     y_test_pred_original = best_tree_classifier.predict(X_test_original)
 
@@ -263,4 +264,37 @@ def plot_learning_curve(estimator, X, y, cv=5, train_sizes=np.linspace(0.1, 1.0,
     plt.legend(loc="best")
     plt.title('Learning Curve (HistGradientBoosting)')
     plt.show()
+    
+def model(df_dirty, df_original):
+    # Splitting the dataset con duplicati into features and target variable
+    X_dirty = df_dirty.drop('stroke', axis=1)
+    y_dirty = df_dirty['stroke']
+    
+    X_original = df_original.drop('stroke', axis=1)
+    y_original = df_original['stroke']
+
+    X_train_original, X_test_original, y_train_original, y_test_original = train_test_split(X_original, y_original, test_size=0.3, random_state=42)
+
+    # Splitting the dirty dataset into training set and test set (with 30% testing)
+    X_train_dirty, X_test_dirty, y_train_dirty, y_test_dirty = train_test_split(X_dirty, y_dirty, test_size=0.3, random_state=42)
+    
+    decision_tree_model = DecisionTreeClassifier(max_depth=6, random_state=0)
+    decision_tree_model.fit(X_train_dirty, y_train_dirty)
+    print("\n--- Prestazioni del modello Decision Tree applicato al set di Test: \n")
+    y_pred_dirty = decision_tree_model.predict(X_test_dirty)
+    y_pred_original = decision_tree_model.predict(X_test_original)
+    
+    print("Classification Report on Training Set:")
+    print(classification_report(y_test_dirty, y_pred_dirty))
+
+    # Printing performance on the test set original
+    print("Classification Report on Test Set - original:")
+    print(classification_report(y_test_original, y_pred_original))
+    
+    plot_decision_tree(decision_tree_model,df_original.columns,)
+    plot_feature_importance_decision_tree(decision_tree_model, X_train_dirty)
+    plot_roc_curve(y_test_original, decision_tree_model, X_test_original)
+    plot_confusion_matrix(y_test_original, y_pred_original)
+    return decision_tree_model
+
     

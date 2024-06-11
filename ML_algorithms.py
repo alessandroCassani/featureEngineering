@@ -8,11 +8,12 @@ from sklearn.tree import plot_tree
 from sklearn.metrics import roc_curve, roc_auc_score, confusion_matrix, ConfusionMatrixDisplay
 from sklearn.model_selection import KFold
 from sklearn.metrics import accuracy_score
-from sklearn.ensemble import HistGradientBoostingClassifier
-from scipy.stats import randint
-from sklearn.model_selection import learning_curve
 import scipy.stats as st  
 from sklearn.svm import SVC
+from sklearn.model_selection import train_test_split, RandomizedSearchCV
+from sklearn.svm import SVC
+from scipy.stats import reciprocal
+
 
 def train_decision_tree_model(df_dirty, df_original):
     # Splitting the dataset con duplicati into features and target variable
@@ -164,38 +165,49 @@ def k_fold_cross_validation_dt(model, df):
     plt.legend()
     plt.show()
 
-
 def model_svm(df_dirty, df_original):
-    # Splitting the dataset con duplicati into features and target variable
-    X_dirty = df_dirty.drop('stroke', axis=1)
-    y_dirty = df_dirty['stroke']
+    # Define parameter distributions for randomized search
+    param_distributions = {'C': reciprocal(0.1, 1000), 
+                           'gamma': reciprocal(0.001, 1),
+                           'kernel': ['rbf', 'linear']}
     
+    # Split the original dataset into features and target variable
     X_original = df_original.drop('stroke', axis=1)
     y_original = df_original['stroke']
-
     X_train_original, X_test_original, y_train_original, y_test_original = train_test_split(X_original, y_original, test_size=0.3, random_state=42)
 
-    # Splitting the dirty dataset into training set and test set (with 30% testing)
+    # Split the dirty dataset into features and target variable
+    X_dirty = df_dirty.drop('stroke', axis=1)
+    y_dirty = df_dirty['stroke']
     X_train_dirty, X_test_dirty, y_train_dirty, y_test_dirty = train_test_split(X_dirty, y_dirty, test_size=0.3, random_state=42)
     
+    # Initialize SVM model
     svm_model = SVC(kernel='linear', random_state=0)
     svm_model.fit(X_train_dirty, y_train_dirty)
 
+    # Predict on the dirty test set
     y_pred_dirty = svm_model.predict(X_test_dirty)
     
-    # Printing performance on the training set dirty
-    print("Classification Report on Training Set:")
+    # Printing performance on the dirty test set
+    print("Classification Report on Dirty Test Set:")
     print(classification_report(y_test_dirty, y_pred_dirty))
 
+    # Predict on the original test set
     y_pred_original = svm_model.predict(X_test_original)
     
-    # Printing performance on the test set original
-    print("Classification Report on Test Set - original:")
+    # Printing performance on the original test set
+    print("Classification Report on Original Test Set:")
     print(classification_report(y_test_original, y_pred_original))
     
-    plot_roc_curve(y_test_original, svm_model, X_test_original)
+    # Plot ROC curve
+    plot_roc_curve_svm(y_test_original, svm_model, X_test_original)
+
+    
+    # Plot confusion matrix
     plot_confusion_matrix(y_test_original, y_pred_original)
+    
     return svm_model
+
 
     
 def model_dt(df_dirty, df_original):
@@ -211,7 +223,7 @@ def model_dt(df_dirty, df_original):
     # Splitting the dirty dataset into training set and test set (with 30% testing)
     X_train_dirty, X_test_dirty, y_train_dirty, y_test_dirty = train_test_split(X_dirty, y_dirty, test_size=0.3, random_state=42)
     
-    decision_tree_model = DecisionTreeClassifier(max_depth=6, random_state=0)
+    decision_tree_model = DecisionTreeClassifier(max_depth=10, random_state=0)
     decision_tree_model.fit(X_train_dirty, y_train_dirty)
     print("\n--- Prestazioni del modello Decision Tree applicato al set di Test: \n")
     y_pred_dirty = decision_tree_model.predict(X_test_dirty)
@@ -229,6 +241,21 @@ def model_dt(df_dirty, df_original):
     plot_roc_curve(y_test_original, decision_tree_model, X_test_original)
     plot_confusion_matrix(y_test_original, y_pred_original)
     return decision_tree_model
+
+def plot_roc_curve_svm(y_test, classifier, X_test):
+    y_pred_prob = classifier.decision_function(X_test)
+    fpr, tpr, thresholds = roc_curve(y_test, y_pred_prob)
+    roc_auc = roc_auc_score(y_test, y_pred_prob)
+    plt.plot(fpr, tpr, label='ROC curve (area = %0.2f)' % roc_auc)
+    plt.plot([0, 1], [0, 1], 'k--')
+    plt.xlim([0.0, 1.0])
+    plt.ylim([0.0, 1.05])
+    plt.xlabel('False Positive Rate')
+    plt.ylabel('True Positive Rate')
+    plt.title('Receiver Operating Characteristic (ROC) Curve')
+    plt.legend(loc="lower right")
+    plt.show()
+    print("AUC Score:", roc_auc)
 
 
     

@@ -229,7 +229,7 @@ def model_dt(df_dirty, df_original):
     y_pred_dirty = decision_tree_model.predict(X_test_dirty)
     y_pred_original = decision_tree_model.predict(X_test_original)
     
-    print("Classification Report on Training Set:")
+    print("Classification Report on Test Set - dirty:")
     print(classification_report(y_test_dirty, y_pred_dirty))
 
     # Printing performance on the test set original

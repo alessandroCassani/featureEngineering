@@ -8,22 +8,25 @@ from sklearn.tree import plot_tree
 from sklearn.metrics import roc_curve, roc_auc_score, confusion_matrix, ConfusionMatrixDisplay
 from sklearn.model_selection import KFold
 from sklearn.metrics import accuracy_score
-from sklearn.ensemble import HistGradientBoostingClassifier
-from scipy.stats import randint
-from sklearn.model_selection import learning_curve
 import scipy.stats as st  
+from sklearn.svm import SVC
+from sklearn.model_selection import train_test_split, RandomizedSearchCV
+from sklearn.svm import SVC
+from scipy.stats import reciprocal
+
 
 def train_decision_tree_model(df_dirty, df_original):
     # Splitting the dataset con duplicati into features and target variable
-    X = df_dirty.drop('stroke', axis=1)
-    y = df_dirty['stroke']
+    X_dirty = df_dirty.drop('stroke', axis=1)
+    y_dirty = df_dirty['stroke']
+    
+    X_original = df_original.drop('stroke', axis=1)
+    y_original = df_original['stroke']
 
-    # Splitting the dataset originale into features and target variable
-    X_test_original = df_original.drop('stroke', axis=1)
-    y_test_original = df_original['stroke']
-
-    # Splitting the dataset into training set and test set (with 30% testing)
-    X_train_dirty, X_test_dirty, y_train_dirty, y_test_dirty = train_test_split(X, y, test_size=0.3, random_state=42)
+    # Splitting the dirty dataset into training set and test set (with 30% testing)
+    X_train_dirty, X_test_dirty, y_train_dirty, y_test_dirty = train_test_split(X_dirty, y_dirty, test_size=0.3, random_state=42)
+    
+    X_train_original, X_test_original, y_train_original, y_test_original = train_test_split(X_original, y_original, test_size=0.3, random_state=42)
 
     # Creating the decision tree classifier
     tree_classifier = DecisionTreeClassifier(random_state=42)
@@ -34,7 +37,7 @@ def train_decision_tree_model(df_dirty, df_original):
         'max_features': ['sqrt', 'log2', None],
         'min_samples_split': np.arange(2, 51, 2),
         'min_samples_leaf': np.arange(1, 9),
-        'max_depth': [None, 5, 10, 15, 20]
+        'max_depth': [None, 5, 10, 15]
     }
 
     # Using RandomizedSearchCV for efficient hyperparameter search
@@ -56,27 +59,22 @@ def train_decision_tree_model(df_dirty, df_original):
     end_time_training = time()
     dt_training_time = end_time_training - start_time_training
 
-    # Predictions on test sets
+    # Predictions 
     y_train_pred_dirty = best_tree_classifier.predict(X_train_dirty)
-    y_test_pred_dirty = best_tree_classifier.predict(X_test_dirty)
     y_test_pred_original = best_tree_classifier.predict(X_test_original)
 
     # Valutazione delle prestazioni sul set di addestramento
     print("Classification Report on Training Set:")
     print(classification_report(y_train_dirty, y_train_pred_dirty))
 
-    # Printing performance on the test set dirty
-    print("Classification Report on Test Set - dirty:")
-    print(classification_report(y_test_dirty, y_test_pred_dirty))
-
     # Printing performance on the test set original
     print("Classification Report on Test Set - original:")
     print(classification_report(y_test_original, y_test_pred_original))
 
     # Printing the best parameters and time taken for hyperparameter search and training
-    print("\nMigliori Parametri:", best_params)
-    print("Tempo impiegato per la Ricerca degli Iperparametri:", hyperparameter_search_time, "secondi")
-    print("Tempo impiegato per l'Addestramento:", dt_training_time, "secondi")
+    print("\nbest hyperparameter:", best_params)
+    print("hyperparameter's time search:", hyperparameter_search_time, "seconds")
+    print("training time needed:", dt_training_time, "seconds")
     
     plot_decision_tree(random_search.best_estimator_, feature_names=X_train_dirty.columns)
     plot_feature_importance_decision_tree(best_tree_classifier, X_train_dirty)
@@ -139,7 +137,7 @@ def k_fold_cross_validation_dt(model, df):
 
     accuracy_k_fold_dt = []
 
-    for n_fold, (train_idx, valid_idx) in enumerate(folds.split(X_train, y_train)):
+    for n_fold, (train_idx, valid_idx) in enumerate(folds.split(X_test, y_test)):
         X_train_fold, X_valid_fold = X_train.iloc[train_idx], X_train.iloc[valid_idx]
         y_train_fold, y_valid_fold = y_train.iloc[train_idx], y_train.iloc[valid_idx]
 
@@ -167,105 +165,94 @@ def k_fold_cross_validation_dt(model, df):
     plt.legend()
     plt.show()
 
+def model_svm(df_dirty, df_original):
+    # Define parameter distributions for randomized search
+    param_distributions = {'C': reciprocal(0.1, 1000), 
+                           'gamma': reciprocal(0.001, 1),
+                           'kernel': ['rbf', 'linear']}
+    
+    # Split the original dataset into features and target variable
+    X_original = df_original.drop('stroke', axis=1)
+    y_original = df_original['stroke']
+    X_train_original, X_test_original, y_train_original, y_test_original = train_test_split(X_original, y_original, test_size=0.3, random_state=42)
 
-def train_hist_gradient_boosting_model(df_dirty, df_original):
+    # Split the dirty dataset into features and target variable
+    X_dirty = df_dirty.drop('stroke', axis=1)
+    y_dirty = df_dirty['stroke']
+    X_train_dirty, X_test_dirty, y_train_dirty, y_test_dirty = train_test_split(X_dirty, y_dirty, test_size=0.3, random_state=42)
+    
+    # Initialize SVM model
+    svm_model = SVC(kernel='linear', random_state=0)
+    svm_model.fit(X_train_dirty, y_train_dirty)
+
+    # Predict on the dirty test set
+    y_pred_dirty = svm_model.predict(X_test_dirty)
+    
+    # Printing performance on the dirty test set
+    print("Classification Report on Dirty Test Set:")
+    print(classification_report(y_test_dirty, y_pred_dirty))
+
+    # Predict on the original test set
+    y_pred_original = svm_model.predict(X_test_original)
+    
+    # Printing performance on the original test set
+    print("Classification Report on Original Test Set:")
+    print(classification_report(y_test_original, y_pred_original))
+    
+    # Plot ROC curve
+    plot_roc_curve_svm(y_test_original, svm_model, X_test_original)
+
+    
+    # Plot confusion matrix
+    plot_confusion_matrix(y_test_original, y_pred_original)
+    
+    return svm_model
+
+
+    
+def model_dt(df_dirty, df_original):
     # Splitting the dataset con duplicati into features and target variable
-    X = df_dirty.drop('stroke', axis=1)
-    y = df_dirty['stroke']
-
-    # Splitting the dataset originale into features and target variable
-    X_test_original = df_original.drop('stroke', axis=1)
-    y_test_original = df_original['stroke']
-
-    # Splitting the dataset into training set and test set (with 30% testing)
-    X_train_dirty, X_test_dirty, y_train_dirty, y_test_dirty = train_test_split(X, y, test_size=0.3, random_state=42)
-
-    # Define the parameter grid
-    param_grid = {
-        'max_iter': randint(50, 500),
-        'learning_rate': [0.01, 0.1, 0.2, 0.3],
-        'max_depth': randint(3, 10),
-        'min_samples_leaf': randint(1, 20),
-        'l2_regularization': [0.0, 0.1, 0.2, 0.3],
-    }
-
-    # Create a HistGradientBoostingClassifier
-    hgb_classifier = HistGradientBoostingClassifier()
-
-    # Initialize RandomizedSearchCV
-    random_search = RandomizedSearchCV(
-        hgb_classifier,
-        param_distributions=param_grid,
-        n_iter=50,
-        cv=5,
-        scoring='recall',
-        verbose=2,
-        n_jobs=-1
-    )
-
-    start_time = time()
-    random_search.fit(X_train_dirty, y_train_dirty)
-    end_time = time()
-    search_time = end_time - start_time
+    X_dirty = df_dirty.drop('stroke', axis=1)
+    y_dirty = df_dirty['stroke']
     
-    print(f'search time: {search_time}')
+    X_original = df_original.drop('stroke', axis=1)
+    y_original = df_original['stroke']
 
-    # Print the best parameters
-    print("Best parameters found: ", random_search.best_params_)
+    X_train_original, X_test_original, y_train_original, y_test_original = train_test_split(X_original, y_original, test_size=0.3, random_state=42)
 
-    # Print the best score on training data
-    print("Best score on training data: ", random_search.best_score_)
-
-    # Get the best model
-    best_model = random_search.best_estimator_
-
-    # Predictions on training set
-    train_predictions = best_model.predict(X_train_dirty)
-
-    # Print classification report for training set
-    print("Classification Report on Training Set - dirty:")
-    print(classification_report(y_train_dirty, train_predictions))
-
-    # Predictions on test set dirty
-    test_predictions_dirty = best_model.predict(X_test_dirty)
-
-    # Print classification report for test set
-    print("Classification Report on Test Set - dirty:")
-    print(classification_report(y_test_dirty, test_predictions_dirty))
+    # Splitting the dirty dataset into training set and test set (with 30% testing)
+    X_train_dirty, X_test_dirty, y_train_dirty, y_test_dirty = train_test_split(X_dirty, y_dirty, test_size=0.3, random_state=42)
     
-    # Predictions on test set original
-    test_predictions_original = best_model.predict(X_test_original)
+    decision_tree_model = DecisionTreeClassifier(max_depth=10, random_state=0)
+    decision_tree_model.fit(X_train_dirty, y_train_dirty)
+    print("\n--- Prestazioni del modello Decision Tree applicato al set di Test: \n")
+    y_pred_dirty = decision_tree_model.predict(X_test_dirty)
+    y_pred_original = decision_tree_model.predict(X_test_original)
+    
+    print("Classification Report on Training Set:")
+    print(classification_report(y_test_dirty, y_pred_dirty))
 
-    # Print classification report for test set original
+    # Printing performance on the test set original
     print("Classification Report on Test Set - original:")
-    print(classification_report(y_test_original, test_predictions_original))
+    print(classification_report(y_test_original, y_pred_original))
     
+    plot_decision_tree(decision_tree_model,df_original.columns,)
+    plot_feature_importance_decision_tree(decision_tree_model, X_train_dirty)
+    plot_roc_curve(y_test_original, decision_tree_model, X_test_original)
+    plot_confusion_matrix(y_test_original, y_pred_original)
+    return decision_tree_model
 
-    plot_roc_curve(y_test_original, best_model, X_test_original)
-    plot_confusion_matrix(y_test_original, test_predictions_original)
-    plot_learning_curve(HistGradientBoostingClassifier(), X_train_dirty, y_train_dirty, cv=5)
-
-    return best_model
-
-def plot_learning_curve(estimator, X, y, cv=5, train_sizes=np.linspace(0.1, 1.0, 10)):
-    train_sizes, train_scores, test_scores = learning_curve(
-        estimator, X, y, cv=cv, n_jobs=-1, train_sizes=train_sizes)
-
-    train_scores_mean = np.mean(train_scores, axis=1)
-    train_scores_std = np.std(train_scores, axis=1)
-    test_scores_mean = np.mean(test_scores, axis=1)
-    test_scores_std = np.std(test_scores, axis=1)
-
-    plt.figure(figsize=(10, 6))
-    plt.fill_between(train_sizes, train_scores_mean - train_scores_std,
-                     train_scores_mean + train_scores_std, alpha=0.1, color="r")
-    plt.fill_between(train_sizes, test_scores_mean - test_scores_std,
-                     test_scores_mean + test_scores_std, alpha=0.1, color="g")
-    plt.plot(train_sizes, train_scores_mean, 'o-', color="r", label="Training score")
-    plt.plot(train_sizes, test_scores_mean, 'o-', color="g", label="Cross-validation score")
-    plt.xlabel("Training examples")
-    plt.ylabel("Score")
-    plt.legend(loc="best")
-    plt.title('Learning Curve (HistGradientBoosting)')
+def plot_roc_curve_svm(y_test, classifier, X_test):
+    y_pred_prob = classifier.decision_function(X_test)
+    fpr, tpr, thresholds = roc_curve(y_test, y_pred_prob)
+    roc_auc = roc_auc_score(y_test, y_pred_prob)
+    plt.plot(fpr, tpr, label='ROC curve (area = %0.2f)' % roc_auc)
+    plt.plot([0, 1], [0, 1], 'k--')
+    plt.xlim([0.0, 1.0])
+    plt.ylim([0.0, 1.05])
+    plt.xlabel('False Positive Rate')
+    plt.ylabel('True Positive Rate')
+    plt.title('Receiver Operating Characteristic (ROC) Curve')
+    plt.legend(loc="lower right")
     plt.show()
-    
+    print("AUC Score:", roc_auc)

@@ -256,3 +256,69 @@ def plot_roc_curve_svm(y_test, classifier, X_test):
     plt.legend(loc="lower right")
     plt.show()
     print("AUC Score:", roc_auc)
+
+def decision_tree(df):
+    # Splitting the dataset con duplicati into features and target variable
+    X = df.drop('stroke', axis=1)
+    y = df['stroke']
+
+    # Splitting the dirty dataset into training set and test set (with 30% testing)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+
+    decision_tree_model = DecisionTreeClassifier(max_depth=10, random_state=0)
+    decision_tree_model.fit(X_train, y_train)
+    print("\n--- Prestazioni del modello Decision Tree applicato al set di Test: \n")
+    pred_train = decision_tree_model.predict(X_train)
+    pred_test = decision_tree_model.predict(X_test)
+    
+    # Printing performance on the training set
+    print("Classification Report on Training Set")
+    print(classification_report(y_train, pred_train))
+
+    # Printing performance on the test set
+    print("Classification Report on Test Set:")
+    print(classification_report(y_test, pred_test))
+    
+    plot_decision_tree(decision_tree_model,df.columns)
+    plot_feature_importance_decision_tree(decision_tree_model, X_train)
+    plot_roc_curve(y_test, decision_tree_model, X_test)
+    plot_confusion_matrix(y_test, pred_test)
+    return decision_tree_model
+
+def SVM(df):
+    # Define parameter distributions for randomized search
+    param_distributions = {'C': reciprocal(0.1, 1000), 
+                           'gamma': reciprocal(0.001, 1),
+                           'kernel': ['rbf', 'linear']}
+    
+    # Split the original dataset into features and target variable
+    X = df.drop('stroke', axis=1)
+    y = df['stroke']
+    
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+
+    # Initialize SVM model
+    svm_model = SVC(kernel='linear', random_state=0)
+    svm_model.fit(X_train, y_train)
+
+    # Predict on the dirty test set
+    pred_train = svm_model.predict(X_train)
+    
+    # Printing performance on the test set
+    print("Classification Report Training Set:")
+    print(classification_report(y_train, pred_train))
+
+    # Predict on the original test set
+    pred_test = svm_model.predict(X_test)
+    
+    # Printing performance on the test set
+    print("Classification Report on Test Set:")
+    print(classification_report(y_test, pred_test))
+    
+    # Plot ROC curve
+    plot_roc_curve_svm(y_test, svm_model, X_test)
+    
+    # Plot confusion matrix
+    plot_confusion_matrix(y_test, pred_test)
+    
+    return svm_model

@@ -18,74 +18,6 @@ from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
 
 
-def train_decision_tree_model(df_dirty, df_original):
-    # Splitting the dataset con duplicati into features and target variable
-    X_dirty = df_dirty.drop('stroke', axis=1)
-    y_dirty = df_dirty['stroke']
-    
-    X_original = df_original.drop('stroke', axis=1)
-    y_original = df_original['stroke']
-
-    # Splitting the dirty dataset into training set and test set (with 30% testing)
-    X_train_dirty, X_test_dirty, y_train_dirty, y_test_dirty = train_test_split(X_dirty, y_dirty, test_size=0.3, random_state=42)
-    
-    X_train_original, X_test_original, y_train_original, y_test_original = train_test_split(X_original, y_original, test_size=0.3, random_state=42)
-
-    # Creating the decision tree classifier
-    tree_classifier = DecisionTreeClassifier(random_state=42)
-
-    # Defining the hyperparameter grid
-    param_dist = {
-        'criterion': ['gini', 'entropy'],
-        'max_features': ['sqrt', 'log2', None],
-        'min_samples_split': np.arange(2, 51, 2),
-        'min_samples_leaf': np.arange(1, 9),
-        'max_depth': [None, 5, 10, 15]
-    }
-
-    # Using RandomizedSearchCV for efficient hyperparameter search
-    random_search = RandomizedSearchCV(tree_classifier, param_distributions=param_dist, n_iter=100, cv=10, scoring='roc_auc', random_state=42)
-
-    # Measuring the start time for hyperparameter search
-    start_time_hyperparameter_search = time()
-    random_search.fit(X_train_dirty, y_train_dirty)
-    end_time_hyperparameter_search = time()
-    hyperparameter_search_time = end_time_hyperparameter_search - start_time_hyperparameter_search
-
-    # Getting the best parameters and best estimator
-    best_params = random_search.best_params_
-    best_tree_classifier = random_search.best_estimator_
-
-    # Training the model on the entire training set and measuring training time
-    start_time_training = time()
-    best_tree_classifier.fit(X_train_dirty, y_train_dirty)
-    end_time_training = time()
-    dt_training_time = end_time_training - start_time_training
-
-    # Predictions 
-    y_train_pred_dirty = best_tree_classifier.predict(X_train_dirty)
-    y_test_pred_original = best_tree_classifier.predict(X_test_original)
-
-    # Valutazione delle prestazioni sul set di addestramento
-    print("Classification Report on Training Set:")
-    print(classification_report(y_train_dirty, y_train_pred_dirty))
-
-    # Printing performance on the test set original
-    print("Classification Report on Test Set - original:")
-    print(classification_report(y_test_original, y_test_pred_original))
-
-    # Printing the best parameters and time taken for hyperparameter search and training
-    print("\nbest hyperparameter:", best_params)
-    print("hyperparameter's time search:", hyperparameter_search_time, "seconds")
-    print("training time needed:", dt_training_time, "seconds")
-    
-    plot_decision_tree(random_search.best_estimator_, feature_names=X_train_dirty.columns)
-    plot_feature_importance_decision_tree(best_tree_classifier, X_train_dirty)
-    plot_roc_curve(y_test_original, best_tree_classifier, X_test_original)
-    plot_confusion_matrix(y_test_original, y_test_pred_original)
-
-    return best_tree_classifier
-
 def plot_decision_tree(tree_model, feature_names, class_names=['0', '1']):
     plt.figure(figsize=(20, 10))
     tree_plot = plot_tree(tree_model, filled=True, feature_names=feature_names, class_names=class_names, rounded=True, impurity=False, fontsize=8)
@@ -93,6 +25,7 @@ def plot_decision_tree(tree_model, feature_names, class_names=['0', '1']):
     text = tree_plot[0]
     print("Node Labels:\n", text)
     plt.show()
+
     
 def plot_feature_importance_decision_tree(best_tree_classifier, X):
     importance = best_tree_classifier.feature_importances_
@@ -228,7 +161,6 @@ def model_svm(df_dirty, df_original):
 
     
 def model_dt(df_dirty, df_original):
-
     # Splitting the dataset con duplicati into features and target variable
     X_dirty = df_dirty.drop('stroke', axis=1)
     y_dirty = df_dirty['stroke']
@@ -243,9 +175,9 @@ def model_dt(df_dirty, df_original):
     
     decision_tree_model = DecisionTreeClassifier(max_depth=10, random_state=0)
     decision_tree_model.fit(X_train_dirty, y_train_dirty)
-    
     y_pred_original = decision_tree_model.predict(X_test_original)
     
+
     # Printing performance on the test set original
     print("Classification Report on Test Set - original:")
     print(classification_report(y_test_original, y_pred_original))
@@ -255,6 +187,7 @@ def model_dt(df_dirty, df_original):
     plot_roc_curve(y_test_original, decision_tree_model, X_test_original)
     plot_confusion_matrix(y_test_original, y_pred_original)
     return decision_tree_model
+
 
 def plot_roc_curve_svm(y_test, classifier, X_test):
     y_pred_prob = classifier.decision_function(X_test)

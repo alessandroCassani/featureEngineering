@@ -13,6 +13,12 @@ from sklearn.svm import SVC
 from sklearn.model_selection import train_test_split, RandomizedSearchCV
 from sklearn.svm import SVC
 from scipy.stats import reciprocal
+import numpy as np
+import pandas as pd
+from sklearn.naive_bayes import GaussianNB
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
+from sklearn.compose import ColumnTransformer
+from sklearn.pipeline import Pipeline
 
 
 def train_decision_tree_model(df_dirty, df_original):
@@ -256,6 +262,37 @@ def plot_roc_curve_svm(y_test, classifier, X_test):
     plt.legend(loc="lower right")
     plt.show()
     print("AUC Score:", roc_auc)
+    
+    
+def model_nb(df_dirty,df_original):
+    X_dirty = df_dirty.drop('stroke', axis=1)
+    y_dirty = df_dirty['stroke']
+    
+    X_original = df_original.drop('stroke', axis=1)
+    y_original = df_original['stroke']
+    
+    X_train_original, X_test_original, y_train_original, y_test_original = train_test_split(X_original, y_original, test_size=0.3, random_state=42)
 
+    # Splitting the dirty dataset into training set and test set (with 30% testing)
+    X_train_dirty, X_test_dirty, y_train_dirty, y_test_dirty = train_test_split(X_dirty, y_dirty, test_size=0.3, random_state=42)
 
+    preprocessor = ColumnTransformer(
+        transformers=[
+            ('num', StandardScaler(), ['age', 'avg_glucose_level','bmi']),
+            ('cat', OneHotEncoder(), ['work_type']),
+            ('binary', 'passthrough', ['sex','hypertension','heart_disease','ever_married','Residence_type','smoking_status'])  
+        ])
+    
+    model = Pipeline(steps=[
+        ('preprocessor', preprocessor),
+        ('classifier', GaussianNB())
+    ])
+    
+    model.fit(X_train_dirty, y_train_dirty)
+    
+    y_pred_original = model.predict(X_test_original)
+
+    print("Classification Report on Test Set - original:")
+    print(classification_report(y_test_original, y_pred_original))
+    
     

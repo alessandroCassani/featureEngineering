@@ -13,6 +13,9 @@ from sklearn.svm import SVC
 from sklearn.model_selection import train_test_split, RandomizedSearchCV
 from sklearn.svm import SVC
 from scipy.stats import reciprocal
+from sklearn.pipeline import Pipeline
+from sklearn.compose import ColumnTransformer
+from sklearn.preprocessing import StandardScaler, OneHotEncoder
 
 
 def train_decision_tree_model(df_dirty, df_original):
@@ -166,10 +169,26 @@ def k_fold_cross_validation_dt(model, df):
     plt.show()
 
 def model_svm(df_dirty, df_original):
-    # Define parameter distributions for randomized search
-    param_distributions = {'C': reciprocal(0.1, 1000), 
-                           'gamma': reciprocal(0.001, 1),
-                           'kernel': ['rbf', 'linear']}
+    continuous_features = ['age', 'bmi', 'avg_glucose_level']
+    binary_features = ['sex', 'hypertension', 'heart_disease', 'ever_married', 'Residence_type', 'smoking_status']  
+    categorical_features = ['work_type']
+    
+    continuous_transformer = Pipeline(steps=[
+        ('scaler', StandardScaler())
+    ])
+
+    categorical_transformer = Pipeline(steps=[
+        ('onehot', OneHotEncoder())
+    ])
+    
+    
+    preprocessor = ColumnTransformer(
+    transformers=[
+        ('cont', continuous_transformer, continuous_features),
+        ('cat', categorical_transformer, categorical_features),
+        ('bin', 'passthrough', binary_features)
+    ])
+
     
     # Split the original dataset into features and target variable
     X_original = df_original.drop('stroke', axis=1)
@@ -183,34 +202,40 @@ def model_svm(df_dirty, df_original):
     
     # Initialize SVM model
     svm_model = SVC(kernel='linear', random_state=0)
-    svm_model.fit(X_train_dirty, y_train_dirty)
+    
+    pipeline = Pipeline(steps=[
+        ('preprocessor', preprocessor),
+        ('classifier', svm_model)
+    ])
+    
+    pipeline.fit(X_train_dirty, y_train_dirty)
 
     # Predict on the dirty test set
-    y_pred_dirty = svm_model.predict(X_test_dirty)
+    y_pred_dirty = pipeline.predict(X_test_dirty)
     
     # Printing performance on the dirty test set
     print("Classification Report on Dirty Test Set:")
     print(classification_report(y_test_dirty, y_pred_dirty))
 
     # Predict on the original test set
-    y_pred_original = svm_model.predict(X_test_original)
+    y_pred_original = pipeline.predict(X_test_original)
     
     # Printing performance on the original test set
     print("Classification Report on Original Test Set:")
     print(classification_report(y_test_original, y_pred_original))
     
     # Plot ROC curve
-    plot_roc_curve_svm(y_test_original, svm_model, X_test_original)
-
+    plot_roc_curve_svm(y_test_original, pipeline, X_test_original)
     
     # Plot confusion matrix
     plot_confusion_matrix(y_test_original, y_pred_original)
     
-    return svm_model
+    return pipeline
 
 
     
 def model_dt(df_dirty, df_original):
+
     # Splitting the dataset con duplicati into features and target variable
     X_dirty = df_dirty.drop('stroke', axis=1)
     y_dirty = df_dirty['stroke']

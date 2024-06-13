@@ -210,13 +210,6 @@ def model_svm(df_dirty, df_original):
     
     pipeline.fit(X_train_dirty, y_train_dirty)
 
-    # Predict on the dirty test set
-    y_pred_dirty = pipeline.predict(X_test_dirty)
-    
-    # Printing performance on the dirty test set
-    print("Classification Report on Dirty Test Set:")
-    print(classification_report(y_test_dirty, y_pred_dirty))
-
     # Predict on the original test set
     y_pred_original = pipeline.predict(X_test_original)
     
@@ -250,13 +243,9 @@ def model_dt(df_dirty, df_original):
     
     decision_tree_model = DecisionTreeClassifier(max_depth=10, random_state=0)
     decision_tree_model.fit(X_train_dirty, y_train_dirty)
-    print("\n--- Prestazioni del modello Decision Tree applicato al set di Test: \n")
-    y_pred_dirty = decision_tree_model.predict(X_test_dirty)
+    
     y_pred_original = decision_tree_model.predict(X_test_original)
     
-    print("Classification Report on Training Set:")
-    print(classification_report(y_test_dirty, y_pred_dirty))
-
     # Printing performance on the test set original
     print("Classification Report on Test Set - original:")
     print(classification_report(y_test_original, y_pred_original))

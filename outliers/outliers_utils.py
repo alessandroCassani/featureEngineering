@@ -24,27 +24,7 @@ def visualize_outliers_specific(df, feature):
     else:
         print('no outliers detected')
 
-# maybe it makes delete - uniform
-def add_outlier_continuous(df, feature, percentage):
-    mean = df[feature].mean()
-    std = df[feature].std()
-
-    z_score = 3
-    lower_limit = mean - (z_score * std)
-    upper_limit = mean + (z_score * std)
-
-    n_rows = int(len(df) * (percentage / 100))
-
-    outlier_indices = np.random.choice(df.index, size=n_rows, replace=False)
-
-    outliers = np.random.uniform(lower_limit, upper_limit, size=n_rows)
-    outliers = np.abs(outliers)  # Module to avoid null values
-    outliers = np.round(outliers).astype(int)  # Approximates values to integers
-
-    df.loc[outlier_indices, feature] = outliers
-    return df
-
-# variable normal
+# Function to replace outliers, using variable normal
 def outliers_replace(df, feature, percentage):
     # Removed rows from the dataset
     num_rows = int(len(df) * (percentage / 100))
@@ -79,28 +59,24 @@ def drop_negative_age(df):
     df[df['age'] >= 0]
 
 def add_categorical_outliers(feature, percentage, df):
-    # Calcola il valore outlier per la colonna specificata
+    # Calculates the outlier value for the specified column
     outlier_value = df[feature].value_counts().idxmin()
     print("Valore meno frequente: ", outlier_value)
 
-    # Determina il numero di righe da modificare
     n_rows = int(len(df) * (percentage / 100))
 
-    # Seleziona casualmente le righe da modificare
     rows_to_modify = np.random.choice(df.index, size=n_rows, replace=False)
 
-    # Inserisci il valore outlier nella percentuale di righe specificata
+    # Enter the outlier value in the specified percentage of rows
     df.loc[rows_to_modify, feature] = outlier_value
     return df
 
 def detect_outliers_categorical(df, feature, threshold):
-    # Calcola la frequenza delle categorie
     value_counts = df[feature].value_counts()
     total_count = len(df[feature])
-    # Identifica le categorie che sono sotto la soglia (percentuale)
     outliers = value_counts[value_counts / total_count < threshold].index
-    print(f"Value counts:\n{value_counts}")  # Debug: stampa delle frequenze
-    print(f"Outliers detected: {outliers.tolist()}")  # Debug: stampa degli outlier
+    print(f"Value counts:\n{value_counts}")  
+    print(f"Outliers detected: {outliers.tolist()}")
     return outliers
 
 def visualize_outliers_categorical(df, feature):
@@ -119,3 +95,31 @@ def visualize_outliers_categorical(df, feature):
         plt.show()
     else:
         print('No outliers detected')
+
+# Function to replace outliers with values at 20% above the mean
+def replace_outliers_with_above_mean(df, feature):
+    threshold=3
+    outliers_idx = detect_outliers_zscore(df, feature, threshold)
+    if len(outliers_idx) == 0:
+        print("No outliers detected.")
+        return df
+
+    mean_value = df[feature].mean()
+    replacement_value = mean_value * 1.20
+
+    df.loc[outliers_idx, feature] = replacement_value
+    return df
+
+# Function to replace outliers with values 20% above the mean calculated from the original dataframe
+def replace_outliers_with_above_mean_original(df_original, df_dirty, feature):
+    threshold = 3
+    outliers_idx = detect_outliers_zscore(df_dirty, feature, threshold)
+    if len(outliers_idx) == 0:
+        print("No outliers detected.")
+        return df_dirty
+
+    mean_value = df_original[feature].mean()  
+    replacement_value = mean_value * 1.20
+
+    df_dirty.loc[outliers_idx, feature] = replacement_value
+    return df_dirty

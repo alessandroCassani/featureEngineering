@@ -2,6 +2,7 @@ import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
 import scipy.stats as st
+import pandas as pd
 
 def max_min_commonValue(df):
     for column in df.columns:
@@ -144,3 +145,30 @@ def add_null_values(df, column_name, percentage):
     original_values = df.loc[indices_to_nullify, column_name].copy()
     df.loc[indices_to_nullify, column_name] = np.nan
     return indices_to_nullify, original_values
+
+def print_duplicates_values(df):
+    total_rows = len(df)
+    print(total_rows)
+    
+    print("\nDuplicate Counts:")
+    duplicate_counts = df.duplicated().sum()
+    print(duplicate_counts)
+    
+    print("\nPercentage of Duplicate Values:")
+    duplicate_percentage = (duplicate_counts / total_rows) * 100
+    print(duplicate_percentage)
+
+def add_duplicates_values(df, feature, percentage):
+    max_feature_value = df[feature].max()
+    rows_with_max_feature = df[df[feature] == max_feature_value]
+    num_rows_to_duplicate = max(1, int((percentage/100) * len(rows_with_max_feature)))
+    rows_to_duplicate = rows_with_max_feature.head(num_rows_to_duplicate)
+    df = pd.concat([df, rows_to_duplicate], ignore_index=True)
+    return df
+
+def duplicate_rows(df, percent):
+    num_duplicates = int(len(df) * percent / 100)
+    duplicated_rows = np.random.choice(df.index, size=num_duplicates, replace=True)
+    duplicated_data = df.loc[duplicated_rows]
+    df = pd.concat([df, duplicated_data], ignore_index=True)
+    return df

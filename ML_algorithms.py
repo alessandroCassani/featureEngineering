@@ -111,9 +111,8 @@ def model_svm(df_dirty, df_original):
     ])
 
     categorical_transformer = Pipeline(steps=[
-        ('onehot', OneHotEncoder())
+        ('onehot', OneHotEncoder(handle_unknown='ignore'))
     ])
-    
     
     preprocessor = ColumnTransformer(
     transformers=[

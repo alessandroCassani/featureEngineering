@@ -1,7 +1,7 @@
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
-import pandas as pd
+import scipy.stats as st
 
 def max_min_commonValue(df):
     for column in df.columns:
@@ -16,7 +16,7 @@ def max_min_commonValue(df):
 
 def print_null_duplicates_values(df):
     total_rows = len(df)
-    print(total_rows)
+    print(f'total rows: {total_rows}')
     
     print("Null Value Counts:")
     null_counts = df.isnull().sum()
@@ -62,7 +62,6 @@ def check_categorical_values(df):
     else:
         print('All values are correct')
             
-            
 def check_negative_values (df, feature):
     abnormal_values = (df[feature] < 0)
     if abnormal_values.any():
@@ -71,20 +70,25 @@ def check_negative_values (df, feature):
     else:
         print(f'correct values in {feature} feature')
         
-
 def check_age_married_consistency(df):
     invalid_rows_index = df[(df['age'] < 16) & (df['ever_married'] == 1)].index
-    #df = df.drop(invalid_rows_index, axis=0)
     print('number of incosistencies: \n')
     print(len(invalid_rows_index))
-    #print("Rows with age < 16 and ever_married == 1 have been dropped")
+    
+def drop_inconsistencies(df):
+    invalid_rows_index_age_married = df[(df['age'] < 16) & (df['ever_married'] == 1)].index
+    df = df.drop(invalid_rows_index_age_married, axis=0)
+    invalid_rows_index = df[(df['age'] < 16) & ((df['work_type'] != 0) | (df['work_type'] != 1))].index
+    df = df.drop(invalid_rows_index, axis=0)
+    df = df[df['sex'] >= 0]
+    df = df[df['age'] >= 0]
+    return df
     
 def check_age_workType_consistency(df):
-    invalid_rows_index = df[(df['age'] < 18) & ((df['work_type'] != 0) | (df['work_type'] != 1))].index
-    #df = df.drop(invalid_rows_index, axis=0)
+    invalid_rows_index = df[(df['age'] < 16) & ((df['work_type'] != 0) | (df['work_type'] != 1))].index
     print('number of incosistencies: \n')
     print(len(invalid_rows_index))
-    #print("Rows with age < 16 and work_type different from 0 or 1 dropped")
+    print("Rows with age < 16 and work_type different from 0 or 1 dropped")
     
 def detect_outliers_zscore(df, threshold):
     z_scores = np.abs((df - df.mean()) / df.std())
@@ -110,22 +114,11 @@ def visualize_outliers(df):
 
 def drop_null_values(df):
     df.dropna(inplace=True)
-    #df.dropna()
     return df
 
 def drop_negative_values(df, feature):
     abnormal_values = (df[feature] < 0)
-    df_c = df.drop(df[abnormal_values].index)
-    return df_c
-    
-def dropping_age_married_consistency(df):
-    invalid_rows_index = df[(df['age'] < 16) & (df['ever_married'] == 1)].index
-    df = df.drop(invalid_rows_index, axis=0)
-    return df
-
-def drop_age_workType_consistency(df):
-    invalid_rows_index = df[(df['age'] < 18) & ((df['work_type'] != 0) | (df['work_type'] != 1))].index
-    df = df.drop(invalid_rows_index, axis=0)
+    df = df.drop(df[abnormal_values].index)
     return df
 
 def drop_outliers(df):

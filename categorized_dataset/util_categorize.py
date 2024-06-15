@@ -36,3 +36,19 @@ def label_encoding(df,feature):
     labelEncoder = LabelEncoder()
     df[feature] = labelEncoder.fit_transform(df[feature])
     return df
+
+def age_category(age):
+    if age < 0:
+        return "Invalid age"
+    elif age <= 12:
+        return "Child"
+    elif age <= 19:
+        return "Teenager"
+    elif age <= 64:
+        return "Adult"
+    else:
+        return "Senior"
+
+def categorize_glucose(df):
+    df['age'] = df['age'].apply(age_category)
+    return df

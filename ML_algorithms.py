@@ -402,3 +402,389 @@ def plot_roc_curve_conlusion_svm(y_pred_prod_Age, y_test_Age, y_pred_prod_glucos
 
     # Mostra il grafico
     plt.show()
+
+def plot_roc_curve_conlusion_three_dt(y_pred_prod_1, y_test_1, y_pred_prod_2, y_test_2,
+                                  y_pred_prod_3, y_test_3, feature1, feature2, feature3):
+    # Calcolo della curva ROC per ogni modello
+    fpr1, tpr1, thresholds1 = roc_curve(y_test_1, y_pred_prod_1)
+    roc_auc1 = roc_auc_score(y_test_1, y_pred_prod_1)
+
+    # Calcolo della curva ROC per ogni modello
+    fpr2, tpr2, thresholds2 = roc_curve(y_test_2, y_pred_prod_2)
+    roc_auc2 = roc_auc_score(y_test_2, y_pred_prod_2)
+
+    # Calcolo della curva ROC per ogni modello
+    fpr3, tpr3, thresholds3 = roc_curve(y_test_3, y_pred_prod_3)
+    roc_auc3 = roc_auc_score(y_test_3, y_pred_prod_3)
+
+    # Plot delle curve ROC
+    plt.figure(figsize=(10, 8))
+
+    plt.plot(fpr1, tpr1, color='darkorange', lw=2, label= f"{feature1} '(AUC = %0.2f)' % {roc_auc3}")
+    plt.plot(fpr2, tpr2, color='blue', lw=2, label= f"{feature2} '(AUC = %0.2f)' % {roc_auc2}")
+    plt.plot(fpr3, tpr3, color='red', lw=2, label= f"{feature3} '(AUC = %0.2f)' % {roc_auc2}")
+
+    # Linea di riferimento
+    plt.plot([0, 1], [0, 1], 'k--', lw=2)
+
+    # Impostazioni del grafico
+    plt.xlim([0.0, 1.0])
+    plt.ylim([0.0, 1.05])
+    plt.xlabel('False Positive Rate')
+    plt.ylabel('True Positive Rate')
+    plt.title('Confronto delle curve ROC - Support Vector Machine')
+    plt.legend(loc="lower right")
+
+    # Mostra il grafico
+    plt.show()
+
+def plot_roc_curve_conlusion_three_svm(y_pred_prod_1, y_test_1, y_pred_prod_2, y_test_2,
+                                  y_pred_prod_3, y_test_3, feature1, feature2, feature3):
+    # Calcolo della curva ROC per ogni modello
+    fpr1, tpr1, thresholds1 = roc_curve(y_test_1, y_pred_prod_1)
+    roc_auc1 = roc_auc_score(y_test_1, y_pred_prod_1)
+
+    # Calcolo della curva ROC per ogni modello
+    fpr2, tpr2, thresholds2 = roc_curve(y_test_2, y_pred_prod_2)
+    roc_auc2 = roc_auc_score(y_test_2, y_pred_prod_2)
+
+    # Calcolo della curva ROC per ogni modello
+    fpr3, tpr3, thresholds3 = roc_curve(y_test_3, y_pred_prod_3)
+    roc_auc3 = roc_auc_score(y_test_3, y_pred_prod_3)
+
+    # Plot delle curve ROC
+    plt.figure(figsize=(10, 8))
+
+    plt.plot(fpr1, tpr1, color='darkorange', lw=2, label='{0} (AUC = {1:.2f})'.format(feature1, roc_auc1))
+    plt.plot(fpr2, tpr2, color='blue', lw=2, label='{0} (AUC = {1:.2f})'.format(feature2, roc_auc2))
+    plt.plot(fpr3, tpr3, color='red', lw=2, label='{0} (AUC = {1:.2f})'.format(feature3, roc_auc3))
+
+    # Linea di riferimento
+    plt.plot([0, 1], [0, 1], 'k--', lw=2)
+
+    # Impostazioni del grafico
+    plt.xlim([0.0, 1.0])
+    plt.ylim([0.0, 1.05])
+    plt.xlabel('False Positive Rate')
+    plt.ylabel('True Positive Rate')
+    plt.title('Confronto delle curve ROC - Support Vector Machine')
+    plt.legend(loc="lower right")
+
+    # Mostra il grafico
+    plt.show()
+
+def plot_roc_curve_conlusion_six_dt(y_pred_prod_1, y_test_1, y_pred_prod_2, y_test_2,
+                                    y_pred_prod_3, y_test_3, y_pred_prod_4, y_test_4,
+                                    y_pred_prod_5, y_test_5, y_pred_prod_6, y_test_6,
+                                    feature1, feature2, feature3, feature4, feature5, feature6):
+    # Calcolo della curva ROC per ogni modello
+    fpr1, tpr1, thresholds1 = roc_curve(y_test_1, y_pred_prod_1)
+    roc_auc1 = roc_auc_score(y_test_1, y_pred_prod_1)
+
+    # Calcolo della curva ROC per ogni modello
+    fpr2, tpr2, thresholds2 = roc_curve(y_test_2, y_pred_prod_2)
+    roc_auc2 = roc_auc_score(y_test_2, y_pred_prod_2)
+
+    # Calcolo della curva ROC per ogni modello
+    fpr3, tpr3, thresholds3 = roc_curve(y_test_3, y_pred_prod_3)
+    roc_auc3 = roc_auc_score(y_test_3, y_pred_prod_3)
+
+    # Calcolo della curva ROC per ogni modello
+    fpr4, tpr4, thresholds4 = roc_curve(y_test_4, y_pred_prod_4)
+    roc_auc4 = roc_auc_score(y_test_4, y_pred_prod_4)
+
+    # Calcolo della curva ROC per ogni modello
+    fpr5, tpr5, thresholds5 = roc_curve(y_test_5, y_pred_prod_5)
+    roc_auc5 = roc_auc_score(y_test_5, y_pred_prod_5)
+
+    # Calcolo della curva ROC per ogni modello
+    fpr6, tpr6, thresholds6 = roc_curve(y_test_6, y_pred_prod_6)
+    roc_auc6 = roc_auc_score(y_test_6, y_pred_prod_6)
+
+    # Plot delle curve ROC
+    plt.figure(figsize=(10, 8))
+
+    plt.plot(fpr1, tpr1, color='darkorange', lw=2, label='{0} (AUC = {1:.2f})'.format(feature1, roc_auc1))
+    plt.plot(fpr2, tpr2, color='blue', lw=2, label='{0} (AUC = {1:.2f})'.format(feature2, roc_auc2))
+    plt.plot(fpr3, tpr3, color='red', lw=2, label='{0} (AUC = {1:.2f})'.format(feature3, roc_auc3))
+    plt.plot(fpr4, tpr4, color='green', lw=2, label='{0} (AUC = {1:.2f})'.format(feature4, roc_auc4))
+    plt.plot(fpr5, tpr5, color='yellow', lw=2, label='{0} (AUC = {1:.2f})'.format(feature5, roc_auc5))
+    plt.plot(fpr6, tpr6, color='brown', lw=2, label='{0} (AUC = {1:.2f})'.format(feature6, roc_auc6))
+
+    # Linea di riferimento
+    plt.plot([0, 1], [0, 1], 'k--', lw=2)
+
+    # Impostazioni del grafico
+    plt.xlim([0.0, 1.0])
+    plt.ylim([0.0, 1.05])
+    plt.xlabel('False Positive Rate')
+    plt.ylabel('True Positive Rate')
+    plt.title('Confronto delle curve ROC - Support Vector Machine')
+    plt.legend(loc="lower right")
+
+    # Mostra il grafico
+    plt.show()
+
+def plot_roc_curve_conlusion_six_svm(y_pred_prod_1, y_test_1, y_pred_prod_2, y_test_2,
+                                    y_pred_prod_3, y_test_3, y_pred_prod_4, y_test_4,
+                                    y_pred_prod_5, y_test_5, y_pred_prod_6, y_test_6,
+                                    feature1, feature2, feature3, feature4, feature5, feature6):
+    # Calcolo della curva ROC per ogni modello
+    fpr1, tpr1, thresholds1 = roc_curve(y_test_1, y_pred_prod_1)
+    roc_auc1 = roc_auc_score(y_test_1, y_pred_prod_1)
+
+    # Calcolo della curva ROC per ogni modello
+    fpr2, tpr2, thresholds2 = roc_curve(y_test_2, y_pred_prod_2)
+    roc_auc2 = roc_auc_score(y_test_2, y_pred_prod_2)
+
+    # Calcolo della curva ROC per ogni modello
+    fpr3, tpr3, thresholds3 = roc_curve(y_test_3, y_pred_prod_3)
+    roc_auc3 = roc_auc_score(y_test_3, y_pred_prod_3)
+
+    # Calcolo della curva ROC per ogni modello
+    fpr4, tpr4, thresholds4 = roc_curve(y_test_4, y_pred_prod_4)
+    roc_auc4 = roc_auc_score(y_test_4, y_pred_prod_4)
+
+    # Calcolo della curva ROC per ogni modello
+    fpr5, tpr5, thresholds5 = roc_curve(y_test_5, y_pred_prod_5)
+    roc_auc5 = roc_auc_score(y_test_5, y_pred_prod_5)
+
+    # Calcolo della curva ROC per ogni modello
+    fpr6, tpr6, thresholds6 = roc_curve(y_test_6, y_pred_prod_6)
+    roc_auc6 = roc_auc_score(y_test_6, y_pred_prod_6)
+
+    # Plot delle curve ROC
+    plt.figure(figsize=(10, 8))
+
+    plt.plot(fpr1, tpr1, color='darkorange', lw=2, label='{0} (AUC = {1:.2f})'.format(feature1, roc_auc1))
+    plt.plot(fpr2, tpr2, color='blue', lw=2, label='{0} (AUC = {1:.2f})'.format(feature2, roc_auc2))
+    plt.plot(fpr3, tpr3, color='red', lw=2, label='{0} (AUC = {1:.2f})'.format(feature3, roc_auc3))
+    plt.plot(fpr4, tpr4, color='green', lw=2, label='{0} (AUC = {1:.2f})'.format(feature4, roc_auc4))
+    plt.plot(fpr5, tpr5, color='yellow', lw=2, label='{0} (AUC = {1:.2f})'.format(feature5, roc_auc5))
+    plt.plot(fpr6, tpr6, color='brown', lw=2, label='{0} (AUC = {1:.2f})'.format(feature6, roc_auc6))
+
+    # Linea di riferimento
+    plt.plot([0, 1], [0, 1], 'k--', lw=2)
+
+    # Impostazioni del grafico
+    plt.xlim([0.0, 1.0])
+    plt.ylim([0.0, 1.05])
+    plt.xlabel('False Positive Rate')
+    plt.ylabel('True Positive Rate')
+    plt.title('Confronto delle curve ROC - Support Vector Machine')
+    plt.legend(loc="lower right")
+
+    # Mostra il grafico
+    plt.show()
+
+def plot_roc_curve_conlusion_five_dt(y_pred_prod_1, y_test_1, y_pred_prod_2, y_test_2,
+                                    y_pred_prod_3, y_test_3, y_pred_prod_4, y_test_4,
+                                    y_pred_prod_5, y_test_5,
+                                    feature1, feature2, feature3, feature4, feature5):
+    # Calcolo della curva ROC per ogni modello
+    fpr1, tpr1, thresholds1 = roc_curve(y_test_1, y_pred_prod_1)
+    roc_auc1 = roc_auc_score(y_test_1, y_pred_prod_1)
+
+    # Calcolo della curva ROC per ogni modello
+    fpr2, tpr2, thresholds2 = roc_curve(y_test_2, y_pred_prod_2)
+    roc_auc2 = roc_auc_score(y_test_2, y_pred_prod_2)
+
+    # Calcolo della curva ROC per ogni modello
+    fpr3, tpr3, thresholds3 = roc_curve(y_test_3, y_pred_prod_3)
+    roc_auc3 = roc_auc_score(y_test_3, y_pred_prod_3)
+
+    # Calcolo della curva ROC per ogni modello
+    fpr4, tpr4, thresholds4 = roc_curve(y_test_4, y_pred_prod_4)
+    roc_auc4 = roc_auc_score(y_test_4, y_pred_prod_4)
+
+    # Calcolo della curva ROC per ogni modello
+    fpr5, tpr5, thresholds5 = roc_curve(y_test_5, y_pred_prod_5)
+    roc_auc5 = roc_auc_score(y_test_5, y_pred_prod_5)
+
+    # Plot delle curve ROC
+    plt.figure(figsize=(10, 8))
+
+    plt.plot(fpr1, tpr1, color='darkorange', lw=2, label='{0} (AUC = {1:.2f})'.format(feature1, roc_auc1))
+    plt.plot(fpr2, tpr2, color='blue', lw=2, label='{0} (AUC = {1:.2f})'.format(feature2, roc_auc2))
+    plt.plot(fpr3, tpr3, color='red', lw=2, label='{0} (AUC = {1:.2f})'.format(feature3, roc_auc3))
+    plt.plot(fpr4, tpr4, color='green', lw=2, label='{0} (AUC = {1:.2f})'.format(feature4, roc_auc4))
+    plt.plot(fpr5, tpr5, color='yellow', lw=2, label='{0} (AUC = {1:.2f})'.format(feature5, roc_auc5))
+
+    # Linea di riferimento
+    plt.plot([0, 1], [0, 1], 'k--', lw=2)
+
+    # Impostazioni del grafico
+    plt.xlim([0.0, 1.0])
+    plt.ylim([0.0, 1.05])
+    plt.xlabel('False Positive Rate')
+    plt.ylabel('True Positive Rate')
+    plt.title('Confronto delle curve ROC - Support Vector Machine')
+    plt.legend(loc="lower right")
+
+    # Mostra il grafico
+    plt.show()
+
+def plot_roc_curve_conlusion_five_svm(y_pred_prod_1, y_test_1, y_pred_prod_2, y_test_2,
+                                    y_pred_prod_3, y_test_3, y_pred_prod_4, y_test_4,
+                                    y_pred_prod_5, y_test_5,
+                                    feature1, feature2, feature3, feature4, feature5):
+    # Calcolo della curva ROC per ogni modello
+    fpr1, tpr1, thresholds1 = roc_curve(y_test_1, y_pred_prod_1)
+    roc_auc1 = roc_auc_score(y_test_1, y_pred_prod_1)
+
+    # Calcolo della curva ROC per ogni modello
+    fpr2, tpr2, thresholds2 = roc_curve(y_test_2, y_pred_prod_2)
+    roc_auc2 = roc_auc_score(y_test_2, y_pred_prod_2)
+
+    # Calcolo della curva ROC per ogni modello
+    fpr3, tpr3, thresholds3 = roc_curve(y_test_3, y_pred_prod_3)
+    roc_auc3 = roc_auc_score(y_test_3, y_pred_prod_3)
+
+    # Calcolo della curva ROC per ogni modello
+    fpr4, tpr4, thresholds4 = roc_curve(y_test_4, y_pred_prod_4)
+    roc_auc4 = roc_auc_score(y_test_4, y_pred_prod_4)
+
+    # Calcolo della curva ROC per ogni modello
+    fpr5, tpr5, thresholds5 = roc_curve(y_test_5, y_pred_prod_5)
+    roc_auc5 = roc_auc_score(y_test_5, y_pred_prod_5)
+
+    # Plot delle curve ROC
+    plt.figure(figsize=(10, 8))
+
+    plt.plot(fpr1, tpr1, color='darkorange', lw=2, label='{0} (AUC = {1:.2f})'.format(feature1, roc_auc1))
+    plt.plot(fpr2, tpr2, color='blue', lw=2, label='{0} (AUC = {1:.2f})'.format(feature2, roc_auc2))
+    plt.plot(fpr3, tpr3, color='red', lw=2, label='{0} (AUC = {1:.2f})'.format(feature3, roc_auc3))
+    plt.plot(fpr4, tpr4, color='green', lw=2, label='{0} (AUC = {1:.2f})'.format(feature4, roc_auc4))
+    plt.plot(fpr5, tpr5, color='yellow', lw=2, label='{0} (AUC = {1:.2f})'.format(feature5, roc_auc5))
+
+    # Linea di riferimento
+    plt.plot([0, 1], [0, 1], 'k--', lw=2)
+
+    # Impostazioni del grafico
+    plt.xlim([0.0, 1.0])
+    plt.ylim([0.0, 1.05])
+    plt.xlabel('False Positive Rate')
+    plt.ylabel('True Positive Rate')
+    plt.title('Confronto delle curve ROC - Support Vector Machine')
+    plt.legend(loc="lower right")
+
+    # Mostra il grafico
+    plt.show()
+
+def plot_roc_curve_conlusion_seven_dt(y_pred_prod_1, y_test_1, y_pred_prod_2, y_test_2,
+                                    y_pred_prod_3, y_test_3, y_pred_prod_4, y_test_4,
+                                    y_pred_prod_5, y_test_5, y_pred_prod_6, y_test_6,
+                                    y_pred_prod_7, y_test_7, feature1, feature2, feature3,
+                                    feature4, feature5, feature6, feature7):
+    # Calcolo della curva ROC per ogni modello
+    fpr1, tpr1, thresholds1 = roc_curve(y_test_1, y_pred_prod_1)
+    roc_auc1 = roc_auc_score(y_test_1, y_pred_prod_1)
+
+    # Calcolo della curva ROC per ogni modello
+    fpr2, tpr2, thresholds2 = roc_curve(y_test_2, y_pred_prod_2)
+    roc_auc2 = roc_auc_score(y_test_2, y_pred_prod_2)
+
+    # Calcolo della curva ROC per ogni modello
+    fpr3, tpr3, thresholds3 = roc_curve(y_test_3, y_pred_prod_3)
+    roc_auc3 = roc_auc_score(y_test_3, y_pred_prod_3)
+
+    # Calcolo della curva ROC per ogni modello
+    fpr4, tpr4, thresholds4 = roc_curve(y_test_4, y_pred_prod_4)
+    roc_auc4 = roc_auc_score(y_test_4, y_pred_prod_4)
+
+    # Calcolo della curva ROC per ogni modello
+    fpr5, tpr5, thresholds5 = roc_curve(y_test_5, y_pred_prod_5)
+    roc_auc5 = roc_auc_score(y_test_5, y_pred_prod_5)
+
+    # Calcolo della curva ROC per ogni modello
+    fpr6, tpr6, thresholds6 = roc_curve(y_test_6, y_pred_prod_6)
+    roc_auc6 = roc_auc_score(y_test_6, y_pred_prod_6)
+
+    # Calcolo della curva ROC per ogni modello
+    fpr7, tpr7, thresholds7 = roc_curve(y_test_7, y_pred_prod_7)
+    roc_auc7 = roc_auc_score(y_test_7, y_pred_prod_7)
+
+
+    # Plot delle curve ROC
+    plt.figure(figsize=(10, 8))
+
+    plt.plot(fpr1, tpr1, color='darkorange', lw=2, label='{0} (AUC = {1:.2f})'.format(feature1, roc_auc1))
+    plt.plot(fpr2, tpr2, color='blue', lw=2, label='{0} (AUC = {1:.2f})'.format(feature2, roc_auc2))
+    plt.plot(fpr3, tpr3, color='red', lw=2, label='{0} (AUC = {1:.2f})'.format(feature3, roc_auc3))
+    plt.plot(fpr4, tpr4, color='green', lw=2, label='{0} (AUC = {1:.2f})'.format(feature4, roc_auc4))
+    plt.plot(fpr5, tpr5, color='yellow', lw=2, label='{0} (AUC = {1:.2f})'.format(feature5, roc_auc5))
+    plt.plot(fpr5, tpr5, color='purple', lw=2, label='{0} (AUC = {1:.2f})'.format(feature6, roc_auc6))
+    plt.plot(fpr5, tpr5, color='pink', lw=2, label='{0} (AUC = {1:.2f})'.format(feature7, roc_auc7))
+
+    # Linea di riferimento
+    plt.plot([0, 1], [0, 1], 'k--', lw=2)
+
+    # Impostazioni del grafico
+    plt.xlim([0.0, 1.0])
+    plt.ylim([0.0, 1.05])
+    plt.xlabel('False Positive Rate')
+    plt.ylabel('True Positive Rate')
+    plt.title('Confronto delle curve ROC - Support Vector Machine')
+    plt.legend(loc="lower right")
+
+    # Mostra il grafico
+    plt.show()
+
+def plot_roc_curve_conlusion_seven_svm(y_pred_prod_1, y_test_1, y_pred_prod_2, y_test_2,
+                                    y_pred_prod_3, y_test_3, y_pred_prod_4, y_test_4,
+                                    y_pred_prod_5, y_test_5, y_pred_prod_6, y_test_6,
+                                    y_pred_prod_7, y_test_7, feature1, feature2, feature3,
+                                    feature4, feature5, feature6, feature7):
+    # Calcolo della curva ROC per ogni modello
+    fpr1, tpr1, thresholds1 = roc_curve(y_test_1, y_pred_prod_1)
+    roc_auc1 = roc_auc_score(y_test_1, y_pred_prod_1)
+
+    # Calcolo della curva ROC per ogni modello
+    fpr2, tpr2, thresholds2 = roc_curve(y_test_2, y_pred_prod_2)
+    roc_auc2 = roc_auc_score(y_test_2, y_pred_prod_2)
+
+    # Calcolo della curva ROC per ogni modello
+    fpr3, tpr3, thresholds3 = roc_curve(y_test_3, y_pred_prod_3)
+    roc_auc3 = roc_auc_score(y_test_3, y_pred_prod_3)
+
+    # Calcolo della curva ROC per ogni modello
+    fpr4, tpr4, thresholds4 = roc_curve(y_test_4, y_pred_prod_4)
+    roc_auc4 = roc_auc_score(y_test_4, y_pred_prod_4)
+
+    # Calcolo della curva ROC per ogni modello
+    fpr5, tpr5, thresholds5 = roc_curve(y_test_5, y_pred_prod_5)
+    roc_auc5 = roc_auc_score(y_test_5, y_pred_prod_5)
+
+    # Calcolo della curva ROC per ogni modello
+    fpr6, tpr6, thresholds6 = roc_curve(y_test_6, y_pred_prod_6)
+    roc_auc6 = roc_auc_score(y_test_6, y_pred_prod_6)
+
+    # Calcolo della curva ROC per ogni modello
+    fpr7, tpr7, thresholds7 = roc_curve(y_test_7, y_pred_prod_7)
+    roc_auc7 = roc_auc_score(y_test_7, y_pred_prod_7)
+
+
+    # Plot delle curve ROC
+    plt.figure(figsize=(10, 8))
+
+    plt.plot(fpr1, tpr1, color='darkorange', lw=2, label='{0} (AUC = {1:.2f})'.format(feature1, roc_auc1))
+    plt.plot(fpr2, tpr2, color='blue', lw=2, label='{0} (AUC = {1:.2f})'.format(feature2, roc_auc2))
+    plt.plot(fpr3, tpr3, color='red', lw=2, label='{0} (AUC = {1:.2f})'.format(feature3, roc_auc3))
+    plt.plot(fpr4, tpr4, color='green', lw=2, label='{0} (AUC = {1:.2f})'.format(feature4, roc_auc4))
+    plt.plot(fpr5, tpr5, color='yellow', lw=2, label='{0} (AUC = {1:.2f})'.format(feature5, roc_auc5))
+    plt.plot(fpr5, tpr5, color='purple', lw=2, label='{0} (AUC = {1:.2f})'.format(feature6, roc_auc6))
+    plt.plot(fpr5, tpr5, color='pink', lw=2, label='{0} (AUC = {1:.2f})'.format(feature7, roc_auc7))
+
+    # Linea di riferimento
+    plt.plot([0, 1], [0, 1], 'k--', lw=2)
+
+    # Impostazioni del grafico
+    plt.xlim([0.0, 1.0])
+    plt.ylim([0.0, 1.05])
+    plt.xlabel('False Positive Rate')
+    plt.ylabel('True Positive Rate')
+    plt.title('Confronto delle curve ROC - Support Vector Machine')
+    plt.legend(loc="lower right")
+
+    # Mostra il grafico
+    plt.show()

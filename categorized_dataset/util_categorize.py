@@ -49,6 +49,6 @@ def age_category(age):
     else:
         return "Senior"
 
-def categorize_glucose(df):
+def categorize_age(df):
     df['age'] = df['age'].apply(age_category)
     return df

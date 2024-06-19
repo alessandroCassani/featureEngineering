@@ -5,9 +5,11 @@ def introduce_inconsistencies(df, single_percentage):
     #single_percentage = percentage / 3
     age_married_originals = introduce_age_married_inconsistencies(df, single_percentage)
     age_workType_originals = introduce_age_workType_inconsistencies(df, single_percentage)
-    negative_ages_originals = introduce_negative_ages(df, single_percentage)
+    negative_ages_originals = introduce_negative_values(df, single_percentage,'age')
+    negative_bmi_originals = introduce_negative_values(df, single_percentage,'bmi')
+    negative_glucose_originals = introduce_negative_values(df, single_percentage,'avg_glucose_level')
     
-    all_originals = {**age_married_originals, **age_workType_originals, **negative_ages_originals}
+    all_originals = {**age_married_originals, **age_workType_originals, **negative_ages_originals, **negative_bmi_originals, **negative_glucose_originals}
     
     return all_originals
 
@@ -31,14 +33,14 @@ def introduce_age_workType_inconsistencies(df, percentage):
 
     return {index: original_values.loc[index].to_dict() for index in rows_to_modify}
 
-def introduce_negative_ages(df, percentage):
+def introduce_negative_values(df, percentage, feature):
     num_rows_to_modify = int(len(df) * percentage / 100)
     rows_to_modify = df.sample(n=num_rows_to_modify, random_state=42).index
-    original_values = df.loc[rows_to_modify, 'age'].copy()
+    original_values = df.loc[rows_to_modify, feature].copy()
 
-    df.loc[rows_to_modify, 'age'] = -1
+    df.loc[rows_to_modify, feature] = -1
     
-    return {index: {'age': original_values.loc[index]} for index in rows_to_modify}
+    return {index: {feature: original_values.loc[index]} for index in rows_to_modify}
 
 def restore_original_values(df, original_values_dict):
     for index, original_values in original_values_dict.items():

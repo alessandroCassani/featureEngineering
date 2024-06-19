@@ -14,7 +14,7 @@ def max_min_commonValue(df):
         print("max value: " + str(max_value))
         print("max common value: " + str(most_common_value) + "\n")
 
-def print_null_duplicates_values(df):
+def print_null_values(df):
     total_rows = len(df)
     print(f'total rows: {total_rows}')
     
@@ -25,14 +25,6 @@ def print_null_duplicates_values(df):
     print("\nPercentage of Null Values:")
     null_percentage = (null_counts / total_rows) * 100
     print(null_percentage)
-    
-    print("\nDuplicate Counts:")
-    duplicate_counts = df.duplicated().sum()
-    print(duplicate_counts)
-    
-    print("\nPercentage of Duplicate Values:")
-    duplicate_percentage = (duplicate_counts / total_rows) * 100
-    print(duplicate_percentage)
     
     for column in df.columns:
         null_count = df[column].isnull().sum()
@@ -100,6 +92,7 @@ def visualize_outliers(df):
     for feature in numerical_features:
         outliers = detect_outliers_zscore(df[feature], threshold)
         if outliers.any():
+            print(f'\n outliers detected for frature {feature}')
             plt.figure(figsize=(8, 4))
             sns.histplot(df[feature], kde=True, color='blue', bins=30)
             plt.title(f'Histogram of {feature}')
@@ -110,7 +103,7 @@ def visualize_outliers(df):
             plt.legend()
             plt.show()
         else:
-            print('no outliers detected')
+            print(f'no outliers detected for feature {feature}')
 
 def drop_null_values(df):
     df.dropna(inplace=True)

@@ -66,7 +66,7 @@ def k_fold_cross_validation_dt(model, df):
 
     print("Accuracy for each fold:", accuracy_k_fold_dt)
     print("Mean accuracy:", np.mean(accuracy_k_fold_dt))
-    
+
     # Calculate the 95% confidence interval
     confidence_interval = st.t.interval(0.95, df=len(accuracy_k_fold_dt)-1, loc=np.mean(accuracy_k_fold_dt), scale=st.sem(accuracy_k_fold_dt))
     print("95% confidence interval:", confidence_interval)
@@ -82,6 +82,7 @@ def k_fold_cross_validation_dt(model, df):
     # Show the plot
     plt.legend()
     plt.show()
+    return mean_accuracy, confidence_interval
 
 def model_svm(df_dirty, df_original):
     continuous_features = ['age', 'bmi', 'avg_glucose_level']
@@ -217,37 +218,6 @@ def SVM(df):
     
     return y_pred_prob, y_test, svm_model    
     
-def model_nb(df_dirty,df_original):
-    X_dirty = df_dirty.drop('stroke', axis=1)
-    y_dirty = df_dirty['stroke']
-    
-    X_original = df_original.drop('stroke', axis=1)
-    y_original = df_original['stroke']
-    
-    X_train_original, X_test_original, y_train_original, y_test_original = train_test_split(X_original, y_original, test_size=0.3, random_state=42)
-
-    # Splitting the dirty dataset into training set and test set (with 30% testing)
-    X_train_dirty, X_test_dirty, y_train_dirty, y_test_dirty = train_test_split(X_dirty, y_dirty, test_size=0.3, random_state=42)
-
-    preprocessor = ColumnTransformer(
-        transformers=[
-            ('num', StandardScaler(), ['age', 'avg_glucose_level','bmi']),
-            ('cat', OneHotEncoder(), ['work_type']),
-            ('binary', 'passthrough', ['sex','hypertension','heart_disease','ever_married','Residence_type','smoking_status'])  
-        ])
-    
-    model = Pipeline(steps=[
-        ('preprocessor', preprocessor),
-        ('classifier', GaussianNB())
-    ])
-    
-    model.fit(X_train_dirty, y_train_dirty)
-    
-    y_pred_original = model.predict(X_test_original)
-
-    print("Classification Report on Test Set - original:")
-    print(classification_report(y_test_original, y_pred_original))  
-
 def model_dt(df_dirty, df_original):
     # Splitting the dataset con duplicati into features and target variable
     X_dirty = df_dirty.drop('stroke', axis=1)
@@ -311,388 +281,41 @@ def plot_roc_curve_conlusion(y_pred_prod_dt, y_test_dt, y_pred_prod_svm, y_test_
     plt.ylim([0.0, 1.05])
     plt.xlabel('False Positive Rate')
     plt.ylabel('True Positive Rate')
-    plt.title('Confronto delle curve ROC')
+    plt.title('ROC Curve Comparison')
     plt.legend(loc="lower right")
     plt.show()
 
-def plot_roc_curve_conlusion_dt(y_pred_prod_Age, y_test_Age, y_pred_prod_glucose, y_test_glucose,
-                                  y_pred_prod_bmi, y_test_bmi, y_pred_prod_categorical, y_test_categorical):
+
+def plot_confidence_intervals(model_results):
+    plt.figure(figsize=(10, 8))
     
-    fpr1, tpr1, thresholds1 = roc_curve(y_test_Age, y_pred_prod_Age)
-    roc_auc1 = roc_auc_score(y_test_Age, y_pred_prod_Age)
-
-    fpr2, tpr2, thresholds2 = roc_curve(y_test_glucose, y_pred_prod_glucose)
-    roc_auc2 = roc_auc_score(y_test_glucose, y_pred_prod_glucose)
-
-    fpr3, tpr3, thresholds3 = roc_curve(y_test_bmi, y_pred_prod_bmi)
-    roc_auc3 = roc_auc_score(y_test_bmi, y_pred_prod_bmi)
-
-    fpr4, tpr4, thresholds4 = roc_curve(y_test_categorical, y_pred_prod_categorical)
-    roc_auc4 = roc_auc_score(y_test_categorical, y_pred_prod_categorical)
-
-    plt.figure(figsize=(10, 8))
-    plt.plot(fpr1, tpr1, color='darkorange', lw=2, label='Age(AUC = %0.2f)' % roc_auc1)
-    plt.plot(fpr2, tpr2, color='blue', lw=2, label='Avg Glucose Level(AUC = %0.2f)' % roc_auc2)
-    plt.plot(fpr3, tpr3, color='red', lw=2, label='BMI(AUC = %0.2f)' % roc_auc3)
-    plt.plot(fpr4, tpr4, color='green', lw=2, label='Categorical(AUC = %0.2f)' % roc_auc4)
-
-    plt.plot([0, 1], [0, 1], 'k--', lw=2)
-
-    # Graphic
-    plt.xlim([0.0, 1.0])
-    plt.ylim([0.0, 1.05])
-    plt.xlabel('False Positive Rate')
-    plt.ylabel('True Positive Rate')
-    plt.title('Confronto delle curve ROC - Decision Tree')
-    plt.legend(loc="lower right")
-
+    for i, (model_name, mean_accuracy, confidence_interval) in enumerate(model_results):
+        plt.errorbar(i, mean_accuracy, yerr=(confidence_interval[1] - confidence_interval[0]) / 2, fmt='o', label=model_name)
+    plt.xlabel('Group')
+    plt.ylabel('Value')
+    plt.title('Mean with Confidence Interval')
+    plt.xticks(range(len(model_results)), [name for name, _, _ in model_results])
+    plt.legend()
     plt.show()
 
-def plot_roc_curve_conlusion_svm(y_pred_prod_Age, y_test_Age, y_pred_prod_glucose, y_test_glucose,
-                                  y_pred_prod_bmi, y_test_bmi, y_pred_prod_categorical, y_test_categorical):
-
-    fpr1, tpr1, thresholds1 = roc_curve(y_test_Age, y_pred_prod_Age)
-    roc_auc1 = roc_auc_score(y_test_Age, y_pred_prod_Age)
-
-    fpr2, tpr2, thresholds2 = roc_curve(y_test_glucose, y_pred_prod_glucose)
-    roc_auc2 = roc_auc_score(y_test_glucose, y_pred_prod_glucose)
-
-    fpr3, tpr3, thresholds3 = roc_curve(y_test_bmi, y_pred_prod_bmi)
-    roc_auc3 = roc_auc_score(y_test_bmi, y_pred_prod_bmi)
-
-    fpr4, tpr4, thresholds4 = roc_curve(y_test_categorical, y_pred_prod_categorical)
-    roc_auc4 = roc_auc_score(y_test_categorical, y_pred_prod_categorical)
-
+def plot_roc_curve_conclusion_with_results(roc_results):
     plt.figure(figsize=(10, 8))
-    plt.plot(fpr1, tpr1, color='darkorange', lw=2, label='Age(AUC = %0.2f)' % roc_auc1)
-    plt.plot(fpr2, tpr2, color='blue', lw=2, label='Avg Glucose Level(AUC = %0.2f)' % roc_auc2)
-    plt.plot(fpr3, tpr3, color='red', lw=2, label='BMI(AUC = %0.2f)' % roc_auc3)
-    plt.plot(fpr4, tpr4, color='green', lw=2, label='Categorical(AUC = %0.2f)' % roc_auc4)
-
-    plt.plot([0, 1], [0, 1], 'k--', lw=2)
-
-    # Graphic
-    plt.xlim([0.0, 1.0])
-    plt.ylim([0.0, 1.05])
-    plt.xlabel('False Positive Rate')
-    plt.ylabel('True Positive Rate')
-    plt.title('Confronto delle curve ROC - Support Vector Machine')
-    plt.legend(loc="lower right")
-
-    plt.show()
-
-def plot_roc_curve_conlusion_three_dt(y_pred_prod_1, y_test_1, y_pred_prod_2, y_test_2,
-                                  y_pred_prod_3, y_test_3, feature1, feature2, feature3):
     
-    fpr1, tpr1, thresholds1 = roc_curve(y_test_1, y_pred_prod_1)
-    roc_auc1 = roc_auc_score(y_test_1, y_pred_prod_1)
-
-    fpr2, tpr2, thresholds2 = roc_curve(y_test_2, y_pred_prod_2)
-    roc_auc2 = roc_auc_score(y_test_2, y_pred_prod_2)
-
-    fpr3, tpr3, thresholds3 = roc_curve(y_test_3, y_pred_prod_3)
-    roc_auc3 = roc_auc_score(y_test_3, y_pred_prod_3)
-
-    plt.figure(figsize=(10, 8))
-    plt.plot(fpr1, tpr1, color='darkorange', lw=2, label= f"{feature1} '(AUC = %0.2f)' % {roc_auc3}")
-    plt.plot(fpr2, tpr2, color='blue', lw=2, label= f"{feature2} '(AUC = %0.2f)' % {roc_auc2}")
-    plt.plot(fpr3, tpr3, color='red', lw=2, label= f"{feature3} '(AUC = %0.2f)' % {roc_auc2}")
-    plt.plot([0, 1], [0, 1], 'k--', lw=2)
-
-    # Graphic
-    plt.xlim([0.0, 1.0])
-    plt.ylim([0.0, 1.05])
-    plt.xlabel('False Positive Rate')
-    plt.ylabel('True Positive Rate')
-    plt.title('Confronto delle curve ROC - Support Vector Machine')
-    plt.legend(loc="lower right")
-    plt.show()
-
-def plot_roc_curve_conlusion_three_svm(y_pred_prod_1, y_test_1, y_pred_prod_2, y_test_2,
-                                  y_pred_prod_3, y_test_3, feature1, feature2, feature3):
+    colors = ['darkorange', 'blue', 'red', 'green', 'yellow', 'purple', 'pink']
     
-    fpr1, tpr1, thresholds1 = roc_curve(y_test_1, y_pred_prod_1)
-    roc_auc1 = roc_auc_score(y_test_1, y_pred_prod_1)
-
-    fpr2, tpr2, thresholds2 = roc_curve(y_test_2, y_pred_prod_2)
-    roc_auc2 = roc_auc_score(y_test_2, y_pred_prod_2)
-
-    fpr3, tpr3, thresholds3 = roc_curve(y_test_3, y_pred_prod_3)
-    roc_auc3 = roc_auc_score(y_test_3, y_pred_prod_3)
-
-    plt.figure(figsize=(10, 8))
-    plt.plot(fpr1, tpr1, color='darkorange', lw=2, label='{0} (AUC = {1:.2f})'.format(feature1, roc_auc1))
-    plt.plot(fpr2, tpr2, color='blue', lw=2, label='{0} (AUC = {1:.2f})'.format(feature2, roc_auc2))
-    plt.plot(fpr3, tpr3, color='red', lw=2, label='{0} (AUC = {1:.2f})'.format(feature3, roc_auc3))
-    plt.plot([0, 1], [0, 1], 'k--', lw=2)
-
-    # Graphic
-    plt.xlim([0.0, 1.0])
-    plt.ylim([0.0, 1.05])
-    plt.xlabel('False Positive Rate')
-    plt.ylabel('True Positive Rate')
-    plt.title('Confronto delle curve ROC - Support Vector Machine')
-    plt.legend(loc="lower right")
-    plt.show()
-
-def plot_roc_curve_conlusion_six_dt(y_pred_prod_1, y_test_1, y_pred_prod_2, y_test_2,
-                                    y_pred_prod_3, y_test_3, y_pred_prod_4, y_test_4,
-                                    y_pred_prod_5, y_test_5, y_pred_prod_6, y_test_6,
-                                    feature1, feature2, feature3, feature4, feature5, feature6):
+    for i, (y_pred_prob, y_test, feature) in enumerate(roc_results):
+        fpr, tpr, thresholds = roc_curve(y_test, y_pred_prob)
+        roc_auc = roc_auc_score(y_test, y_pred_prob)
+        plt.plot(fpr, tpr, color=colors[i], lw=2, label='{0} (AUC = {1:.2f})'.format(feature, roc_auc))
     
-    fpr1, tpr1, thresholds1 = roc_curve(y_test_1, y_pred_prod_1)
-    roc_auc1 = roc_auc_score(y_test_1, y_pred_prod_1)
-
-    fpr2, tpr2, thresholds2 = roc_curve(y_test_2, y_pred_prod_2)
-    roc_auc2 = roc_auc_score(y_test_2, y_pred_prod_2)
-
-    fpr3, tpr3, thresholds3 = roc_curve(y_test_3, y_pred_prod_3)
-    roc_auc3 = roc_auc_score(y_test_3, y_pred_prod_3)
-
-    fpr4, tpr4, thresholds4 = roc_curve(y_test_4, y_pred_prod_4)
-    roc_auc4 = roc_auc_score(y_test_4, y_pred_prod_4)
-
-    fpr5, tpr5, thresholds5 = roc_curve(y_test_5, y_pred_prod_5)
-    roc_auc5 = roc_auc_score(y_test_5, y_pred_prod_5)
-
-    fpr6, tpr6, thresholds6 = roc_curve(y_test_6, y_pred_prod_6)
-    roc_auc6 = roc_auc_score(y_test_6, y_pred_prod_6)
-
-    plt.figure(figsize=(10, 8))
-    plt.plot(fpr1, tpr1, color='darkorange', lw=2, label='{0} (AUC = {1:.2f})'.format(feature1, roc_auc1))
-    plt.plot(fpr2, tpr2, color='blue', lw=2, label='{0} (AUC = {1:.2f})'.format(feature2, roc_auc2))
-    plt.plot(fpr3, tpr3, color='red', lw=2, label='{0} (AUC = {1:.2f})'.format(feature3, roc_auc3))
-    plt.plot(fpr4, tpr4, color='green', lw=2, label='{0} (AUC = {1:.2f})'.format(feature4, roc_auc4))
-    plt.plot(fpr5, tpr5, color='yellow', lw=2, label='{0} (AUC = {1:.2f})'.format(feature5, roc_auc5))
-    plt.plot(fpr6, tpr6, color='brown', lw=2, label='{0} (AUC = {1:.2f})'.format(feature6, roc_auc6))
     plt.plot([0, 1], [0, 1], 'k--', lw=2)
-
-    # Graphic
-    plt.xlim([0.0, 1.0])
-    plt.ylim([0.0, 1.05])
-    plt.xlabel('False Positive Rate')
-    plt.ylabel('True Positive Rate')
-    plt.title('Confronto delle curve ROC - Support Vector Machine')
-    plt.legend(loc="lower right")
-    plt.show()
-
-def plot_roc_curve_conlusion_six_svm(y_pred_prod_1, y_test_1, y_pred_prod_2, y_test_2,
-                                    y_pred_prod_3, y_test_3, y_pred_prod_4, y_test_4,
-                                    y_pred_prod_5, y_test_5, y_pred_prod_6, y_test_6,
-                                    feature1, feature2, feature3, feature4, feature5, feature6):
     
-    fpr1, tpr1, thresholds1 = roc_curve(y_test_1, y_pred_prod_1)
-    roc_auc1 = roc_auc_score(y_test_1, y_pred_prod_1)
-
-    fpr2, tpr2, thresholds2 = roc_curve(y_test_2, y_pred_prod_2)
-    roc_auc2 = roc_auc_score(y_test_2, y_pred_prod_2)
-
-    fpr3, tpr3, thresholds3 = roc_curve(y_test_3, y_pred_prod_3)
-    roc_auc3 = roc_auc_score(y_test_3, y_pred_prod_3)
-
-    fpr4, tpr4, thresholds4 = roc_curve(y_test_4, y_pred_prod_4)
-    roc_auc4 = roc_auc_score(y_test_4, y_pred_prod_4)
-
-    fpr5, tpr5, thresholds5 = roc_curve(y_test_5, y_pred_prod_5)
-    roc_auc5 = roc_auc_score(y_test_5, y_pred_prod_5)
-
-    fpr6, tpr6, thresholds6 = roc_curve(y_test_6, y_pred_prod_6)
-    roc_auc6 = roc_auc_score(y_test_6, y_pred_prod_6)
-
-    plt.figure(figsize=(10, 8))
-
-    plt.plot(fpr1, tpr1, color='darkorange', lw=2, label='{0} (AUC = {1:.2f})'.format(feature1, roc_auc1))
-    plt.plot(fpr2, tpr2, color='blue', lw=2, label='{0} (AUC = {1:.2f})'.format(feature2, roc_auc2))
-    plt.plot(fpr3, tpr3, color='red', lw=2, label='{0} (AUC = {1:.2f})'.format(feature3, roc_auc3))
-    plt.plot(fpr4, tpr4, color='green', lw=2, label='{0} (AUC = {1:.2f})'.format(feature4, roc_auc4))
-    plt.plot(fpr5, tpr5, color='yellow', lw=2, label='{0} (AUC = {1:.2f})'.format(feature5, roc_auc5))
-    plt.plot(fpr6, tpr6, color='brown', lw=2, label='{0} (AUC = {1:.2f})'.format(feature6, roc_auc6))
-
-    plt.plot([0, 1], [0, 1], 'k--', lw=2)
-
     # Graphic
     plt.xlim([0.0, 1.0])
     plt.ylim([0.0, 1.05])
     plt.xlabel('False Positive Rate')
     plt.ylabel('True Positive Rate')
-    plt.title('Confronto delle curve ROC - Support Vector Machine')
-    plt.legend(loc="lower right")
-    plt.show()
-
-def plot_roc_curve_conlusion_five_dt(y_pred_prod_1, y_test_1, y_pred_prod_2, y_test_2,
-                                    y_pred_prod_3, y_test_3, y_pred_prod_4, y_test_4,
-                                    y_pred_prod_5, y_test_5,
-                                    feature1, feature2, feature3, feature4, feature5):
-    
-    fpr1, tpr1, thresholds1 = roc_curve(y_test_1, y_pred_prod_1)
-    roc_auc1 = roc_auc_score(y_test_1, y_pred_prod_1)
-
-    fpr2, tpr2, thresholds2 = roc_curve(y_test_2, y_pred_prod_2)
-    roc_auc2 = roc_auc_score(y_test_2, y_pred_prod_2)
-
-    fpr3, tpr3, thresholds3 = roc_curve(y_test_3, y_pred_prod_3)
-    roc_auc3 = roc_auc_score(y_test_3, y_pred_prod_3)
-
-    fpr4, tpr4, thresholds4 = roc_curve(y_test_4, y_pred_prod_4)
-    roc_auc4 = roc_auc_score(y_test_4, y_pred_prod_4)
-
-    fpr5, tpr5, thresholds5 = roc_curve(y_test_5, y_pred_prod_5)
-    roc_auc5 = roc_auc_score(y_test_5, y_pred_prod_5)
-
-    plt.figure(figsize=(10, 8))
-
-    plt.plot(fpr1, tpr1, color='darkorange', lw=2, label='{0} (AUC = {1:.2f})'.format(feature1, roc_auc1))
-    plt.plot(fpr2, tpr2, color='blue', lw=2, label='{0} (AUC = {1:.2f})'.format(feature2, roc_auc2))
-    plt.plot(fpr3, tpr3, color='red', lw=2, label='{0} (AUC = {1:.2f})'.format(feature3, roc_auc3))
-    plt.plot(fpr4, tpr4, color='green', lw=2, label='{0} (AUC = {1:.2f})'.format(feature4, roc_auc4))
-    plt.plot(fpr5, tpr5, color='yellow', lw=2, label='{0} (AUC = {1:.2f})'.format(feature5, roc_auc5))
-
-    plt.plot([0, 1], [0, 1], 'k--', lw=2)
-
-    # Graphic
-    plt.xlim([0.0, 1.0])
-    plt.ylim([0.0, 1.05])
-    plt.xlabel('False Positive Rate')
-    plt.ylabel('True Positive Rate')
-    plt.title('Confronto delle curve ROC - Support Vector Machine')
-    plt.legend(loc="lower right")
-
-    plt.show()
-
-def plot_roc_curve_conlusion_five_svm(y_pred_prod_1, y_test_1, y_pred_prod_2, y_test_2,
-                                    y_pred_prod_3, y_test_3, y_pred_prod_4, y_test_4,
-                                    y_pred_prod_5, y_test_5,
-                                    feature1, feature2, feature3, feature4, feature5):
-
-    fpr1, tpr1, thresholds1 = roc_curve(y_test_1, y_pred_prod_1)
-    roc_auc1 = roc_auc_score(y_test_1, y_pred_prod_1)
-
-    fpr2, tpr2, thresholds2 = roc_curve(y_test_2, y_pred_prod_2)
-    roc_auc2 = roc_auc_score(y_test_2, y_pred_prod_2)
-
-    fpr3, tpr3, thresholds3 = roc_curve(y_test_3, y_pred_prod_3)
-    roc_auc3 = roc_auc_score(y_test_3, y_pred_prod_3)
-
-    fpr4, tpr4, thresholds4 = roc_curve(y_test_4, y_pred_prod_4)
-    roc_auc4 = roc_auc_score(y_test_4, y_pred_prod_4)
-
-    fpr5, tpr5, thresholds5 = roc_curve(y_test_5, y_pred_prod_5)
-    roc_auc5 = roc_auc_score(y_test_5, y_pred_prod_5)
-
-    plt.figure(figsize=(10, 8))
-
-    plt.plot(fpr1, tpr1, color='darkorange', lw=2, label='{0} (AUC = {1:.2f})'.format(feature1, roc_auc1))
-    plt.plot(fpr2, tpr2, color='blue', lw=2, label='{0} (AUC = {1:.2f})'.format(feature2, roc_auc2))
-    plt.plot(fpr3, tpr3, color='red', lw=2, label='{0} (AUC = {1:.2f})'.format(feature3, roc_auc3))
-    plt.plot(fpr4, tpr4, color='green', lw=2, label='{0} (AUC = {1:.2f})'.format(feature4, roc_auc4))
-    plt.plot(fpr5, tpr5, color='yellow', lw=2, label='{0} (AUC = {1:.2f})'.format(feature5, roc_auc5))
-
-    plt.plot([0, 1], [0, 1], 'k--', lw=2)
-
-    # Graphic
-    plt.xlim([0.0, 1.0])
-    plt.ylim([0.0, 1.05])
-    plt.xlabel('False Positive Rate')
-    plt.ylabel('True Positive Rate')
-    plt.title('Confronto delle curve ROC - Support Vector Machine')
-    plt.legend(loc="lower right")
-
-    plt.show()
-
-def plot_roc_curve_conlusion_seven_dt(y_pred_prod_1, y_test_1, y_pred_prod_2, y_test_2,
-                                    y_pred_prod_3, y_test_3, y_pred_prod_4, y_test_4,
-                                    y_pred_prod_5, y_test_5, y_pred_prod_6, y_test_6,
-                                    y_pred_prod_7, y_test_7, feature1, feature2, feature3,
-                                    feature4, feature5, feature6, feature7):
-
-    fpr1, tpr1, thresholds1 = roc_curve(y_test_1, y_pred_prod_1)
-    roc_auc1 = roc_auc_score(y_test_1, y_pred_prod_1)
-
-    fpr2, tpr2, thresholds2 = roc_curve(y_test_2, y_pred_prod_2)
-    roc_auc2 = roc_auc_score(y_test_2, y_pred_prod_2)
-
-    fpr3, tpr3, thresholds3 = roc_curve(y_test_3, y_pred_prod_3)
-    roc_auc3 = roc_auc_score(y_test_3, y_pred_prod_3)
-
-    fpr4, tpr4, thresholds4 = roc_curve(y_test_4, y_pred_prod_4)
-    roc_auc4 = roc_auc_score(y_test_4, y_pred_prod_4)
-
-    fpr5, tpr5, thresholds5 = roc_curve(y_test_5, y_pred_prod_5)
-    roc_auc5 = roc_auc_score(y_test_5, y_pred_prod_5)
-
-    fpr6, tpr6, thresholds6 = roc_curve(y_test_6, y_pred_prod_6)
-    roc_auc6 = roc_auc_score(y_test_6, y_pred_prod_6)
-
-    fpr7, tpr7, thresholds7 = roc_curve(y_test_7, y_pred_prod_7)
-    roc_auc7 = roc_auc_score(y_test_7, y_pred_prod_7)
-
-    plt.figure(figsize=(10, 8))
-
-    plt.plot(fpr1, tpr1, color='darkorange', lw=2, label='{0} (AUC = {1:.2f})'.format(feature1, roc_auc1))
-    plt.plot(fpr2, tpr2, color='blue', lw=2, label='{0} (AUC = {1:.2f})'.format(feature2, roc_auc2))
-    plt.plot(fpr3, tpr3, color='red', lw=2, label='{0} (AUC = {1:.2f})'.format(feature3, roc_auc3))
-    plt.plot(fpr4, tpr4, color='green', lw=2, label='{0} (AUC = {1:.2f})'.format(feature4, roc_auc4))
-    plt.plot(fpr5, tpr5, color='yellow', lw=2, label='{0} (AUC = {1:.2f})'.format(feature5, roc_auc5))
-    plt.plot(fpr6, tpr6, color='purple', lw=2, label='{0} (AUC = {1:.2f})'.format(feature6, roc_auc6))
-    plt.plot(fpr7, tpr7, color='pink', lw=2, label='{0} (AUC = {1:.2f})'.format(feature7, roc_auc7))
-
-    plt.plot([0, 1], [0, 1], 'k--', lw=2)
-
-    # Graphic
-    plt.xlim([0.0, 1.0])
-    plt.ylim([0.0, 1.05])
-    plt.xlabel('False Positive Rate')
-    plt.ylabel('True Positive Rate')
-    plt.title('Confronto delle curve ROC - Support Vector Machine')
-    plt.legend(loc="lower right")
-
-    plt.show()
-
-def plot_roc_curve_conlusion_seven_svm(y_pred_prod_1, y_test_1, y_pred_prod_2, y_test_2,
-                                    y_pred_prod_3, y_test_3, y_pred_prod_4, y_test_4,
-                                    y_pred_prod_5, y_test_5, y_pred_prod_6, y_test_6,
-                                    y_pred_prod_7, y_test_7, feature1, feature2, feature3,
-                                    feature4, feature5, feature6, feature7):
-
-    fpr1, tpr1, thresholds1 = roc_curve(y_test_1, y_pred_prod_1)
-    roc_auc1 = roc_auc_score(y_test_1, y_pred_prod_1)
-
-    fpr2, tpr2, thresholds2 = roc_curve(y_test_2, y_pred_prod_2)
-    roc_auc2 = roc_auc_score(y_test_2, y_pred_prod_2)
-
-    fpr3, tpr3, thresholds3 = roc_curve(y_test_3, y_pred_prod_3)
-    roc_auc3 = roc_auc_score(y_test_3, y_pred_prod_3)
-
-    fpr4, tpr4, thresholds4 = roc_curve(y_test_4, y_pred_prod_4)
-    roc_auc4 = roc_auc_score(y_test_4, y_pred_prod_4)
-
-    fpr5, tpr5, thresholds5 = roc_curve(y_test_5, y_pred_prod_5)
-    roc_auc5 = roc_auc_score(y_test_5, y_pred_prod_5)
-
-    fpr6, tpr6, thresholds6 = roc_curve(y_test_6, y_pred_prod_6)
-    roc_auc6 = roc_auc_score(y_test_6, y_pred_prod_6)
-
-    fpr7, tpr7, thresholds7 = roc_curve(y_test_7, y_pred_prod_7)
-    roc_auc7 = roc_auc_score(y_test_7, y_pred_prod_7)
-
-    plt.figure(figsize=(10, 8))
-
-    plt.plot(fpr1, tpr1, color='darkorange', lw=2, label='{0} (AUC = {1:.2f})'.format(feature1, roc_auc1))
-    plt.plot(fpr2, tpr2, color='blue', lw=2, label='{0} (AUC = {1:.2f})'.format(feature2, roc_auc2))
-    plt.plot(fpr3, tpr3, color='red', lw=2, label='{0} (AUC = {1:.2f})'.format(feature3, roc_auc3))
-    plt.plot(fpr4, tpr4, color='green', lw=2, label='{0} (AUC = {1:.2f})'.format(feature4, roc_auc4))
-    plt.plot(fpr5, tpr5, color='yellow', lw=2, label='{0} (AUC = {1:.2f})'.format(feature5, roc_auc5))
-    plt.plot(fpr6, tpr6, color='purple', lw=2, label='{0} (AUC = {1:.2f})'.format(feature6, roc_auc6))
-    plt.plot(fpr7, tpr7, color='pink', lw=2, label='{0} (AUC = {1:.2f})'.format(feature7, roc_auc7))
-
-    plt.plot([0, 1], [0, 1], 'k--', lw=2)
-
-    # Graphic
-    plt.xlim([0.0, 1.0])
-    plt.ylim([0.0, 1.05])
-    plt.xlabel('False Positive Rate')
-    plt.ylabel('True Positive Rate')
-    plt.title('Confronto delle curve ROC - Support Vector Machine')
+    plt.title('ROC Curve Comparison')
     plt.legend(loc="lower right")
     
     plt.show()

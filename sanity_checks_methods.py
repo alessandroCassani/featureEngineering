@@ -4,7 +4,8 @@ import matplotlib.pyplot as plt
 import scipy.stats as st
 
 def max_min_commonValue(df):
-    for column in df.columns:
+    features = ['bmi','age','avg_glucose_level']
+    for column in features:
         min_value = df[column].min()
         max_value = df[column].max()
         most_common_value = df[column].mode()[0]

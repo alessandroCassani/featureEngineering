@@ -28,7 +28,7 @@ def introduce_age_workType_inconsistencies(df, percentage):
     rows_to_modify = df.sample(n=num_rows_to_modify, random_state=42).index
     original_values = df.loc[rows_to_modify, ['age', 'work_type']].copy()
 
-    df.loc[rows_to_modify, 'age'] = np.random.randint(0, 18, size=num_rows_to_modify)
+    df.loc[rows_to_modify, 'age'] = np.random.randint(0, 16, size=num_rows_to_modify)
     df.loc[rows_to_modify, 'work_type'] = np.random.randint(2, df['work_type'].max() + 1, size=num_rows_to_modify)
 
     return {index: original_values.loc[index].to_dict() for index in rows_to_modify}

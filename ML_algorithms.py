@@ -16,6 +16,7 @@ from scipy.stats import reciprocal
 from sklearn.pipeline import Pipeline
 from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
+from sklearn.model_selection import GridSearchCV, StratifiedKFold
 
 
 def plot_decision_tree(tree_model, feature_names, class_names=['0', '1']):
@@ -61,6 +62,8 @@ def plot_confusion_matrix(y_test, y_test_pred):
     labels = [1, 0]
     disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=labels)
     disp.plot()
+    plt.show()
+
     
     
 def k_fold_cross_validation_dt(model, df):
@@ -106,58 +109,69 @@ def model_svm(df_dirty, df_original):
     binary_features = ['sex', 'hypertension', 'heart_disease', 'ever_married', 'Residence_type', 'smoking_status']  
     categorical_features = ['work_type']
     
+    # Pipeline di pre-processing per le feature continue
     continuous_transformer = Pipeline(steps=[
         ('scaler', StandardScaler())
     ])
-
+    
+    # Pipeline di pre-processing per le feature categoriche
     categorical_transformer = Pipeline(steps=[
         ('onehot', OneHotEncoder(handle_unknown='ignore'))
     ])
     
+    # Preprocessing combinato per tutte le feature
     preprocessor = ColumnTransformer(
-    transformers=[
-        ('cont', continuous_transformer, continuous_features),
-        ('cat', categorical_transformer, categorical_features),
-        ('bin', 'passthrough', binary_features)
-    ])
-
+        transformers=[
+            ('cont', continuous_transformer, continuous_features),
+            ('cat', categorical_transformer, categorical_features),
+            ('bin', 'passthrough', binary_features)
+        ]
+    )
     
-    # Split the original dataset into features and target variable
     X_original = df_original.drop('stroke', axis=1)
     y_original = df_original['stroke']
     X_train_original, X_test_original, y_train_original, y_test_original = train_test_split(X_original, y_original, test_size=0.3, random_state=42)
 
-    # Split the dirty dataset into features and target variable
     X_dirty = df_dirty.drop('stroke', axis=1)
     y_dirty = df_dirty['stroke']
     X_train_dirty, X_test_dirty, y_train_dirty, y_test_dirty = train_test_split(X_dirty, y_dirty, test_size=0.3, random_state=42)
     
-    # Initialize SVM model
-    svm_model = SVC(kernel='linear', random_state=0)
+    # SVM model with RBF kernel
+    svm_model = SVC(kernel='rbf', probability=True, random_state=0)
     
+    # Create a pipeline
     pipeline = Pipeline(steps=[
         ('preprocessor', preprocessor),
         ('classifier', svm_model)
     ])
     
-    pipeline.fit(X_train_dirty, y_train_dirty)
-
-    # Predict on the original test set
-    y_pred_original = pipeline.predict(X_test_original)
+    # Define parameter grid
+    param_grid = {
+        'classifier__C': [0.1, 1, 10, 100],
+        'classifier__gamma': [1, 0.1, 0.01, 0.001]
+    }
     
-    # Printing performance on the original test set
+    # GridSearch with cross-validation
+    grid_search = GridSearchCV(pipeline, param_grid, cv=StratifiedKFold(n_splits=5), n_jobs=-1, verbose=2)
+    
+    # Fit the model on the dirty dataset
+    grid_search.fit(X_train_dirty, y_train_dirty)
+    
+    # Get the best parameters
+    best_params = grid_search.best_params_
+    print(f"Best parameters found: {best_params}")
+    
+    # Predict and evaluate on the original test set
+    y_pred_original = grid_search.predict(X_test_original)
     print("Classification Report on Original Test Set:")
     print(classification_report(y_test_original, y_pred_original))
     
-    # Plot ROC curve
-    plot_roc_curve_svm(y_test_original, pipeline, X_test_original)
-    
-    # Plot confusion matrix
+    plot_roc_curve_svm(y_test_original, grid_search, X_test_original)
+    plt.show()
     plot_confusion_matrix(y_test_original, y_pred_original)
+    plt.show()
     
-    return pipeline
-
-
+    return grid_search
     
 def model_dt(df_dirty, df_original):
     # Splitting the dataset con duplicati into features and target variable
@@ -189,7 +203,7 @@ def model_dt(df_dirty, df_original):
 
 
 def plot_roc_curve_svm(y_test, classifier, X_test):
-    y_pred_prob = classifier.decision_function(X_test)
+    y_pred_prob = classifier.predict_proba(X_test)[:, 1]  
     fpr, tpr, thresholds = roc_curve(y_test, y_pred_prob)
     roc_auc = roc_auc_score(y_test, y_pred_prob)
     plt.plot(fpr, tpr, label='ROC curve (area = %0.2f)' % roc_auc)
@@ -202,6 +216,7 @@ def plot_roc_curve_svm(y_test, classifier, X_test):
     plt.legend(loc="lower right")
     plt.show()
     print("AUC Score:", roc_auc)
+
 
 
     

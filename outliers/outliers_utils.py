@@ -50,14 +50,6 @@ def outliers_replace(df, feature, percentage):
 
     return df_outliers_added
     
-def drop_negative_values(df, feature):
-    abnormal_values = (df[feature] < 0)
-    df_c = df.drop(df[abnormal_values].index)
-    return df_c
-
-def drop_negative_age(df):
-    df[df['age'] >= 0]
-
 def add_categorical_outliers(feature, percentage, df):
     # Calculates the outlier value for the specified column
     outlier_value = df[feature].value_counts().idxmin()
@@ -95,20 +87,6 @@ def visualize_outliers_categorical(df, feature):
         plt.show()
     else:
         print('No outliers detected')
-
-# Function to replace outliers with values at 20% above the mean
-def replace_outliers_with_above_mean(df, feature):
-    threshold=3
-    outliers_idx = detect_outliers_zscore(df, feature, threshold)
-    if len(outliers_idx) == 0:
-        print("No outliers detected.")
-        return df
-
-    mean_value = df[feature].mean()
-    replacement_value = mean_value * 1.20
-
-    df.loc[outliers_idx, feature] = replacement_value
-    return df
 
 # Function to replace outliers with values 20% above the mean calculated from the original dataframe
 def replace_outliers_with_above_mean_original(df_original, df_dirty, feature):

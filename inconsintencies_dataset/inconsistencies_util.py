@@ -53,15 +53,15 @@ def visualize_inconsistencies(df):
     print('\nTOTAL INCONSISTENCY PERCENTAGE')
     print(total_inconsistency_percentage)
     
-def check_negative_age_values(df):
-    abnormal_values = df['age'] < 0
+def check_negative_values(df, feature):
+    abnormal_values = df[feature] < 0
     num_abnormal_values = abnormal_values.sum()
     total_values = len(df)
     percentage_abnormal_values = (num_abnormal_values / total_values) * 100
 
     if num_abnormal_values > 0:
-        print(f'Number of abnormal values: {num_abnormal_values}')
-        print(f'Percentage of abnormal values: {percentage_abnormal_values:.2f}%')
+        print(f'Number of abnormal values for feature {feature}: {num_abnormal_values}')
+        print(f'Percentage of abnormal values for feature {feature}: {percentage_abnormal_values:.2f}%')
     else:
         print('All values in age feature are correct.')
         

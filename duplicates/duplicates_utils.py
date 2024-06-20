@@ -3,19 +3,6 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import pandas as pd
 
-def drop_negative_age(df):
-    df[df['age'] >= 0]
-
-def drop_null_values(df):
-    df.dropna(inplace=True)
-    #df.dropna()
-    return df
-
-def drop_negative_values(df, feature):
-    abnormal_values = (df[feature] < 0)
-    df_c = df.drop(df[abnormal_values].index)
-    return df_c
-
 def print_duplicates_values(df):
     total_rows = len(df)
     print("Number of rows: ", total_rows)

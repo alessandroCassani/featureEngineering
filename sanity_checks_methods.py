@@ -35,7 +35,6 @@ def print_null_values(df):
         print(f"Null Percentage: {null_percentage:.2f}%")
 
 
-    
 def check_categorical_values(df):
     categorical_features = ['sex', 'hypertension', 'heart_disease', 'ever_married', 'work_type', 'Residence_type', 'smoking_status']
     flag = True

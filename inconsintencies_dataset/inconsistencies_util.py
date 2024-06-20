@@ -49,8 +49,10 @@ def restore_original_values(df, original_values_dict):
     return df
 
 def visualize_inconsistencies(df):
-    total_inconsistency_percentage = check_age_married_consistency(df) + check_age_workType_consistency(df) + check_negative_age_values(df)
-    print('\nTOTAL INCONSISTENCY PERCENTAGE')
+    total_inconsistency_percentage = check_age_married_consistency(df) + check_age_workType_consistency(df) + check_negative_values(df,'age') + check_negative_values(df,'bmi'),
+    check_negative_values(df,'avg_glucose_level')
+    
+    print('\nTOTAL INCONSISTENCIES PERCENTAGE')
     print(total_inconsistency_percentage)
     
 def check_negative_values(df, feature):

@@ -34,6 +34,7 @@ def print_null_values(df):
         print(f"Null Count: {null_count}")
         print(f"Null Percentage: {null_percentage:.2f}%")
 
+
     
 def check_categorical_values(df):
     categorical_features = ['sex', 'hypertension', 'heart_disease', 'ever_married', 'work_type', 'Residence_type', 'smoking_status']
@@ -73,7 +74,9 @@ def drop_inconsistencies(df):
     invalid_rows_index = df[(df['age'] < 16) & ((df['work_type'] != 0) | (df['work_type'] != 1))].index
     df = df.drop(invalid_rows_index, axis=0)
     df = df[df['sex'] >= 0]
-    df = df[df['age'] >= 0]
+    df = drop_negative_values(df,'age')
+    df = drop_negative_values(df,'bmi')
+    df = drop_negative_values(df,'avg_glucose_level')
     return df
     
 def check_age_workType_consistency(df):

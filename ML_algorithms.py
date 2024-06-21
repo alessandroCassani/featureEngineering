@@ -109,17 +109,13 @@ def model_svm(df_dirty, df_original):
     binary_features = ['sex', 'hypertension', 'heart_disease', 'ever_married', 'Residence_type', 'smoking_status']  
     categorical_features = ['work_type']
     
-    # Pipeline di pre-processing per le feature continue
+  
     continuous_transformer = Pipeline(steps=[
         ('scaler', StandardScaler())
     ])
-    
-    # Pipeline di pre-processing per le feature categoriche
     categorical_transformer = Pipeline(steps=[
         ('onehot', OneHotEncoder(handle_unknown='ignore'))
-    ])
-    
-    # Preprocessing combinato per tutte le feature
+    ])    
     preprocessor = ColumnTransformer(
         transformers=[
             ('cont', continuous_transformer, continuous_features),
@@ -127,45 +123,30 @@ def model_svm(df_dirty, df_original):
             ('bin', 'passthrough', binary_features)
         ]
     )
-    
+
     X_original = df_original.drop('stroke', axis=1)
     y_original = df_original['stroke']
     X_train_original, X_test_original, y_train_original, y_test_original = train_test_split(X_original, y_original, test_size=0.3, random_state=42)
-
     X_dirty = df_dirty.drop('stroke', axis=1)
     y_dirty = df_dirty['stroke']
     X_train_dirty, X_test_dirty, y_train_dirty, y_test_dirty = train_test_split(X_dirty, y_dirty, test_size=0.3, random_state=42)
-    
-    # SVM model with RBF kernel
     svm_model = SVC(kernel='rbf', probability=True, random_state=0)
-    
-    # Create a pipeline
+
     pipeline = Pipeline(steps=[
         ('preprocessor', preprocessor),
         ('classifier', svm_model)
     ])
-    
-    # Define parameter grid
     param_grid = {
         'classifier__C': [0.1, 1, 10, 100],
         'classifier__gamma': [1, 0.1, 0.01, 0.001]
     }
-    
-    # GridSearch with cross-validation
     grid_search = GridSearchCV(pipeline, param_grid, cv=StratifiedKFold(n_splits=5), n_jobs=-1, verbose=2)
-    
-    # Fit the model on the dirty dataset
     grid_search.fit(X_train_dirty, y_train_dirty)
-    
-    # Get the best parameters
     best_params = grid_search.best_params_
     print(f"Best parameters found: {best_params}")
-    
-    # Predict and evaluate on the original test set
     y_pred_original = grid_search.predict(X_test_original)
     print("Classification Report on Original Test Set:")
     print(classification_report(y_test_original, y_pred_original))
-    
     plot_roc_curve_svm(y_test_original, grid_search, X_test_original)
     plt.show()
     plot_confusion_matrix(y_test_original, y_pred_original)

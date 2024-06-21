@@ -262,7 +262,7 @@ def decision_tree(df):
     X = df.drop('stroke', axis=1)
     y = df['stroke']
 
-    # Splitting the dirty dataset into training set and test set (with 30% testing)
+    # Splitting the dataset into training set and test set (with 30% testing)
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
 
     decision_tree_model = DecisionTreeClassifier(max_depth=10, random_state=0)

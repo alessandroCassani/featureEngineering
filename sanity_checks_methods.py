@@ -132,7 +132,7 @@ def drop_outliers(df):
     return df
 
 def drop_negative_age(df):
-    df[df['age'] >= 0]
+    return df[df['age'] >= 0]
 
 def print_duplicates_values(df):
     total_rows = len(df)
@@ -154,3 +154,5 @@ def clean_dataset(df):
     df = drop_negative_values(df,'avg_glucose_level')
     df = drop_null_values(df)
     df = drop_inconsistencies(df)
+    
+    return df

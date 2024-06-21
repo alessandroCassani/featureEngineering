@@ -27,21 +27,6 @@ def plot_decision_tree(tree_model, feature_names, class_names=['0', '1']):
     print("Node Labels:\n", text)
     plt.show()
 
-    
-def plot_feature_importance_decision_tree(best_tree_classifier, X):
-    importance = best_tree_classifier.feature_importances_
-    # Sort feature importance
-    sorted_idx = np.argsort(importance)
-    # Plot feature importance
-    plt.figure(figsize=(10, 6))
-    plt.barh(range(len(importance)), importance[sorted_idx], align='center')
-    plt.yticks(range(len(importance)), [X.columns[i] for i in sorted_idx])
-    plt.xlabel('Feature Importance')
-    plt.ylabel('Feature')
-    plt.title('Feature Importance Plot')
-    plt.show()
-    
-    
 def plot_roc_curve(y_test, classifier, X_test):
     y_pred_prob = classifier.predict_proba(X_test)[:, 1]
     fpr, tpr, thresholds = roc_curve(y_test, y_pred_prob)
@@ -57,6 +42,20 @@ def plot_roc_curve(y_test, classifier, X_test):
     plt.show()
     print("AUC Score:", roc_auc)
     
+    
+def plot_feature_importance_decision_tree(best_tree_classifier, X):
+    importance = best_tree_classifier.feature_importances_
+    # Sort feature importance
+    sorted_idx = np.argsort(importance)
+    # Plot feature importance
+    plt.figure(figsize=(10, 6))
+    plt.barh(range(len(importance)), importance[sorted_idx], align='center')
+    plt.yticks(range(len(importance)), [X.columns[i] for i in sorted_idx])
+    plt.xlabel('Feature Importance')
+    plt.ylabel('Feature')
+    plt.title('Feature Importance Plot')
+    plt.show()
+        
 def plot_confusion_matrix(y_test, y_test_pred):
     cm = confusion_matrix(y_test, y_test_pred)
     labels = [1, 0]
@@ -64,7 +63,6 @@ def plot_confusion_matrix(y_test, y_test_pred):
     disp.plot()
     plt.show()
 
-    
     
 def k_fold_cross_validation_dt(model, df):
     X = df.drop('stroke', axis=1)
@@ -87,7 +85,7 @@ def k_fold_cross_validation_dt(model, df):
 
     print("Accuracy for each fold:", accuracy_k_fold_dt)
     print("Mean accuracy:", np.mean(accuracy_k_fold_dt))
-    
+
     # Calculate the 95% confidence interval
     confidence_interval = st.t.interval(0.95, df=len(accuracy_k_fold_dt)-1, loc=np.mean(accuracy_k_fold_dt), scale=st.sem(accuracy_k_fold_dt))
     print("95% confidence interval:", confidence_interval)
@@ -103,6 +101,7 @@ def k_fold_cross_validation_dt(model, df):
     # Show the plot
     plt.legend()
     plt.show()
+    return mean_accuracy, confidence_interval
 
 def model_svm(df_dirty, df_original):
     continuous_features = ['age', 'bmi', 'avg_glucose_level']
@@ -197,7 +196,63 @@ def plot_roc_curve_svm(y_test, classifier, X_test):
     plt.legend(loc="lower right")
     plt.show()
     print("AUC Score:", roc_auc)
+    return y_pred_prob, y_test
+
+def plot_roc_curve_conlusion(y_pred_prod_dt, y_test_dt, y_pred_prod_svm, y_test_svm):
+    fpr1, tpr1, thresholds1 = roc_curve(y_test_dt, y_pred_prod_dt)
+    roc_auc1 = roc_auc_score(y_test_dt, y_pred_prod_dt)
+    fpr2, tpr2, thresholds2 = roc_curve(y_test_svm, y_pred_prod_svm)
+    roc_auc2 = roc_auc_score(y_test_svm, y_pred_prod_svm)
+    plt.figure(figsize=(10, 8))
+
+    # Model 1 - Decision Tree
+    plt.plot(fpr1, tpr1, color='darkorange', lw=2, label='Decision Tree(AUC = %0.2f)' % roc_auc1)
+
+    # Model 2 - Support Vector Machine
+    plt.plot(fpr2, tpr2, color='blue', lw=2, label='Support Vector Machine(AUC = %0.2f)' % roc_auc2)
+
+    plt.plot([0, 1], [0, 1], 'k--', lw=2)
+
+    # Graphic
+    plt.xlim([0.0, 1.0])
+    plt.ylim([0.0, 1.05])
+    plt.xlabel('False Positive Rate')
+    plt.ylabel('True Positive Rate')
+    plt.title('ROC Curve Comparison')
+    plt.legend(loc="lower right")
+    plt.show()
 
 
-
+def plot_confidence_intervals(model_results):
+    plt.figure(figsize=(10, 8))
     
+    for i, (model_name, mean_accuracy, confidence_interval) in enumerate(model_results):
+        plt.errorbar(i, mean_accuracy, yerr=(confidence_interval[1] - confidence_interval[0]) / 2, fmt='o', label=model_name)
+    plt.xlabel('Group')
+    plt.ylabel('Value')
+    plt.title('Mean with Confidence Interval')
+    plt.xticks(range(len(model_results)), [name for name, _, _ in model_results])
+    plt.legend()
+    plt.show()
+
+def plot_roc_curve_conclusion_with_results(roc_results):
+    plt.figure(figsize=(10, 8))
+    
+    colors = ['darkorange', 'blue', 'red', 'green', 'yellow', 'purple', 'pink']
+    
+    for i, (y_pred_prob, y_test, feature) in enumerate(roc_results):
+        fpr, tpr, thresholds = roc_curve(y_test, y_pred_prob)
+        roc_auc = roc_auc_score(y_test, y_pred_prob)
+        plt.plot(fpr, tpr, color=colors[i], lw=2, label='{0} (AUC = {1:.2f})'.format(feature, roc_auc))
+    
+    plt.plot([0, 1], [0, 1], 'k--', lw=2)
+    
+    # Graphic
+    plt.xlim([0.0, 1.0])
+    plt.ylim([0.0, 1.05])
+    plt.xlabel('False Positive Rate')
+    plt.ylabel('True Positive Rate')
+    plt.title('ROC Curve Comparison')
+    plt.legend(loc="lower right")
+    
+    plt.show()

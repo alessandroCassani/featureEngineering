@@ -2,6 +2,7 @@ import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
 import scipy.stats as st
+import pandas as pd
 
 def max_min_commonValue(df):
     features = ['bmi','age','avg_glucose_level']
@@ -35,7 +36,6 @@ def print_null_values(df):
         print(f"Null Count: {null_count}")
         print(f"Null Percentage: {null_percentage:.2f}%")
 
-
 def check_categorical_values(df):
     categorical_features = ['sex', 'hypertension', 'heart_disease', 'ever_married', 'work_type', 'Residence_type', 'smoking_status']
     flag = True
@@ -62,7 +62,7 @@ def check_negative_values (df, feature):
         print(df[abnormal_values])
     else:
         print(f'correct values in {feature} feature')
-        
+    
 def check_age_married_consistency(df):
     invalid_rows_index = df[(df['age'] < 16) & (df['ever_married'] == 1)].index
     print('number of incosistencies: \n')
@@ -78,13 +78,13 @@ def drop_inconsistencies(df):
     df = drop_negative_values(df,'bmi')
     df = drop_negative_values(df,'avg_glucose_level')
     return df
-    
+ 
 def check_age_workType_consistency(df):
     invalid_rows_index = df[(df['age'] < 16) & ((df['work_type'] != 0) | (df['work_type'] != 1))].index
     print('number of incosistencies: \n')
     print(len(invalid_rows_index))
     print("Rows with age < 16 and work_type different from 0 or 1 dropped")
-    
+ 
 def detect_outliers_zscore(df, threshold):
     z_scores = np.abs((df - df.mean()) / df.std())
     return z_scores > threshold
@@ -145,4 +145,12 @@ def print_duplicates_values(df):
     print("\nPercentage of Duplicate Values:")
     duplicate_percentage = (duplicate_counts / total_rows) * 100
     print(duplicate_percentage)
-
+    
+def clean_dataset(df):
+    df = drop_negative_age(df)
+    df = drop_outliers(df)
+    df = drop_negative_values(df,'age')
+    df = drop_negative_values(df,'bmi')
+    df = drop_negative_values(df,'avg_glucose_level')
+    df = drop_null_values(df)
+    df = drop_inconsistencies(df)

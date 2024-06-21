@@ -16,7 +16,8 @@ from scipy.stats import reciprocal
 from sklearn.pipeline import Pipeline
 from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
-from sklearn.naive_bayes import GaussianNB
+from sklearn.model_selection import GridSearchCV, StratifiedKFold
+
 
 def plot_decision_tree(tree_model, feature_names, class_names=['0', '1']):
     plt.figure(figsize=(20, 10))
@@ -25,6 +26,22 @@ def plot_decision_tree(tree_model, feature_names, class_names=['0', '1']):
     text = tree_plot[0]
     print("Node Labels:\n", text)
     plt.show()
+
+def plot_roc_curve(y_test, classifier, X_test):
+    y_pred_prob = classifier.predict_proba(X_test)[:, 1]
+    fpr, tpr, thresholds = roc_curve(y_test, y_pred_prob)
+    roc_auc = roc_auc_score(y_test, y_pred_prob)
+    plt.plot(fpr, tpr, label='ROC curve (area = %0.2f)' % roc_auc)
+    plt.plot([0, 1], [0, 1], 'k--')
+    plt.xlim([0.0, 1.0])
+    plt.ylim([0.0, 1.05])
+    plt.xlabel('False Positive Rate')
+    plt.ylabel('True Positive Rate')
+    plt.title('Receiver Operating Characteristic (ROC) Curve')
+    plt.legend(loc="lower right")
+    plt.show()
+    print("AUC Score:", roc_auc)
+    
     
 def plot_feature_importance_decision_tree(best_tree_classifier, X):
     importance = best_tree_classifier.feature_importances_
@@ -44,6 +61,8 @@ def plot_confusion_matrix(y_test, y_test_pred):
     labels = [1, 0]
     disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=labels)
     disp.plot()
+    plt.show()
+
     
 def k_fold_cross_validation_dt(model, df):
     X = df.drop('stroke', axis=1)
@@ -89,134 +108,50 @@ def model_svm(df_dirty, df_original):
     binary_features = ['sex', 'hypertension', 'heart_disease', 'ever_married', 'Residence_type', 'smoking_status']  
     categorical_features = ['work_type']
     
+  
     continuous_transformer = Pipeline(steps=[
         ('scaler', StandardScaler())
     ])
-
     categorical_transformer = Pipeline(steps=[
-        ('onehot', OneHotEncoder())
-    ])
-    
-    
+        ('onehot', OneHotEncoder(handle_unknown='ignore'))
+    ])    
     preprocessor = ColumnTransformer(
-    transformers=[
-        ('cont', continuous_transformer, continuous_features),
-        ('cat', categorical_transformer, categorical_features),
-        ('bin', 'passthrough', binary_features)
-    ])
+        transformers=[
+            ('cont', continuous_transformer, continuous_features),
+            ('cat', categorical_transformer, categorical_features),
+            ('bin', 'passthrough', binary_features)
+        ]
+    )
 
-    
-    # Split the original dataset into features and target variable
     X_original = df_original.drop('stroke', axis=1)
     y_original = df_original['stroke']
     X_train_original, X_test_original, y_train_original, y_test_original = train_test_split(X_original, y_original, test_size=0.3, random_state=42)
-
-    # Split the dirty dataset into features and target variable
     X_dirty = df_dirty.drop('stroke', axis=1)
     y_dirty = df_dirty['stroke']
     X_train_dirty, X_test_dirty, y_train_dirty, y_test_dirty = train_test_split(X_dirty, y_dirty, test_size=0.3, random_state=42)
-    
-    # Initialize SVM model
-    svm_model = SVC(kernel='linear', random_state=0)
-    
+    svm_model = SVC(kernel='rbf', probability=True, random_state=0)
+
     pipeline = Pipeline(steps=[
         ('preprocessor', preprocessor),
         ('classifier', svm_model)
     ])
-    
-    pipeline.fit(X_train_dirty, y_train_dirty)
-
-    # Predict on the original test set
-    y_pred_original = pipeline.predict(X_test_original)
-    
-    # Printing performance on the original test set
+    param_grid = {
+        'classifier__C': [0.1, 1, 10, 100],
+        'classifier__gamma': [1, 0.1, 0.01, 0.001]
+    }
+    grid_search = GridSearchCV(pipeline, param_grid, cv=StratifiedKFold(n_splits=5), n_jobs=-1, verbose=2)
+    grid_search.fit(X_train_dirty, y_train_dirty)
+    best_params = grid_search.best_params_
+    print(f"Best parameters found: {best_params}")
+    y_pred_original = grid_search.predict(X_test_original)
     print("Classification Report on Original Test Set:")
     print(classification_report(y_test_original, y_pred_original))
-    
-    # Plot ROC curve
-    y_pred_prob_svm, y_test_svm = plot_roc_curve_svm(y_test_original, pipeline, X_test_original)
-    
-    # Plot confusion matrix
-    plot_confusion_matrix(y_test_original, y_pred_original)
-    
-    return y_pred_prob_svm, y_test_svm, pipeline
-    
-def plot_roc_curve_svm(y_test_svm, classifier, X_test):
-    y_pred_prob_svm = classifier.decision_function(X_test)
-    fpr, tpr, thresholds = roc_curve(y_test_svm, y_pred_prob_svm)
-    roc_auc = roc_auc_score(y_test_svm, y_pred_prob_svm)
-    plt.plot(fpr, tpr, label='ROC curve (area = %0.2f)' % roc_auc)
-    plt.plot([0, 1], [0, 1], 'k--')
-    plt.xlim([0.0, 1.0])
-    plt.ylim([0.0, 1.05])
-    plt.xlabel('False Positive Rate')
-    plt.ylabel('True Positive Rate')
-    plt.title('Receiver Operating Characteristic (ROC) Curve')
-    plt.legend(loc="lower right")
+    plot_roc_curve_svm(y_test_original, grid_search, X_test_original)
     plt.show()
-    print("AUC Score:", roc_auc)
-    return y_pred_prob_svm, y_test_svm 
+    plot_confusion_matrix(y_test_original, y_pred_original)
+    plt.show()
     
-def decision_tree(df):
-    # Splitting the dataset con duplicates into features and target variable
-    X = df.drop('stroke', axis=1)
-    y = df['stroke']
-
-    # Splitting the dirty dataset into training set and test set (with 30% testing)
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
-
-    decision_tree_model = DecisionTreeClassifier(max_depth=10, random_state=0)
-    decision_tree_model.fit(X_train, y_train)
-    print("\n--- Prestazioni del modello Decision Tree applicato al set di Test: \n")
-    pred_train = decision_tree_model.predict(X_train)
-    pred_test = decision_tree_model.predict(X_test)
-    
-    # Printing performance on the training set
-    print("Classification Report on Training Set")
-    print(classification_report(y_train, pred_train))
-
-    # Printing performance on the test set
-    print("Classification Report on Test Set:")
-    print(classification_report(y_test, pred_test))
-    
-    plot_decision_tree(decision_tree_model,df.columns)
-    plot_feature_importance_decision_tree(decision_tree_model, X_train)
-    y_pred_prob, y_test = plot_roc_curve(y_test, decision_tree_model, X_test)
-    plot_confusion_matrix(y_test, pred_test)
-    return y_pred_prob, y_test, decision_tree_model
-
-def SVM(df):    
-    # Split the original dataset into features and target variable
-    X = df.drop('stroke', axis=1)
-    y = df['stroke']
-    
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
-
-    # Initialize SVM model
-    svm_model = SVC(kernel='linear', random_state=0)
-    svm_model.fit(X_train, y_train)
-
-    # Predict on the dirty test set
-    pred_train = svm_model.predict(X_train)
-    
-    # Printing performance on the test set
-    print("Classification Report Training Set:")
-    print(classification_report(y_train, pred_train))
-
-    # Predict on the original test set
-    pred_test = svm_model.predict(X_test)
-    
-    # Printing performance on the test set
-    print("Classification Report on Test Set:")
-    print(classification_report(y_test, pred_test))
-    
-    # Plot ROC curve
-    y_pred_prob, y_test = plot_roc_curve_svm(y_test, svm_model, X_test)
-    
-    # Plot confusion matrix
-    plot_confusion_matrix(y_test, pred_test)
-    
-    return y_pred_prob, y_test, svm_model    
+    return grid_search
     
 def model_dt(df_dirty, df_original):
     # Splitting the dataset con duplicati into features and target variable
@@ -234,6 +169,7 @@ def model_dt(df_dirty, df_original):
     decision_tree_model = DecisionTreeClassifier(max_depth=10, random_state=0)
     decision_tree_model.fit(X_train_dirty, y_train_dirty)
     y_pred_original = decision_tree_model.predict(X_test_original)
+    
 
     # Printing performance on the test set original
     print("Classification Report on Test Set - original:")
@@ -241,12 +177,13 @@ def model_dt(df_dirty, df_original):
     
     plot_decision_tree(decision_tree_model,df_original.columns,)
     plot_feature_importance_decision_tree(decision_tree_model, X_train_dirty)
-    y_pred_prob, y_test = plot_roc_curve(y_test_original, decision_tree_model, X_test_original)
+    plot_roc_curve(y_test_original, decision_tree_model, X_test_original)
     plot_confusion_matrix(y_test_original, y_pred_original)
-    return y_pred_prob, y_test, decision_tree_model
+    return decision_tree_model
 
-def plot_roc_curve(y_test, classifier, X_test):
-    y_pred_prob = classifier.predict_proba(X_test)[:, 1]
+
+def plot_roc_curve_svm(y_test, classifier, X_test):
+    y_pred_prob = classifier.predict_proba(X_test)[:, 1]  
     fpr, tpr, thresholds = roc_curve(y_test, y_pred_prob)
     roc_auc = roc_auc_score(y_test, y_pred_prob)
     plt.plot(fpr, tpr, label='ROC curve (area = %0.2f)' % roc_auc)

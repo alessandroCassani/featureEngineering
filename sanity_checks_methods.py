@@ -136,7 +136,7 @@ def drop_negative_age(df):
 
 def print_duplicates_values(df):
     total_rows = len(df)
-    print(total_rows)
+    print(f'total rows: {total_rows}')
     
     print("\nDuplicate Counts:")
     duplicate_counts = df.duplicated().sum()

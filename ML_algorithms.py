@@ -41,6 +41,7 @@ def plot_roc_curve(y_test, classifier, X_test):
     plt.legend(loc="lower right")
     plt.show()
     print("AUC Score:", roc_auc)
+    return y_pred_prob, y_test
     
     
 def plot_feature_importance_decision_tree(best_tree_classifier, X):
@@ -130,7 +131,6 @@ def model_svm(df_dirty, df_original):
     y_dirty = df_dirty['stroke']
     X_train_dirty, X_test_dirty, y_train_dirty, y_test_dirty = train_test_split(X_dirty, y_dirty, test_size=0.3, random_state=42)
     svm_model = SVC(kernel='rbf', probability=True, random_state=0)
-
     pipeline = Pipeline(steps=[
         ('preprocessor', preprocessor),
         ('classifier', svm_model)
@@ -146,12 +146,12 @@ def model_svm(df_dirty, df_original):
     y_pred_original = grid_search.predict(X_test_original)
     print("Classification Report on Original Test Set:")
     print(classification_report(y_test_original, y_pred_original))
-    plot_roc_curve_svm(y_test_original, grid_search, X_test_original)
+    y_pred_prob, y_test = plot_roc_curve_svm(y_test_original, grid_search, X_test_original)
     plt.show()
     plot_confusion_matrix(y_test_original, y_pred_original)
     plt.show()
     
-    return grid_search
+    return y_pred_prob, y_test, grid_search
     
 def model_dt(df_dirty, df_original):
     # Splitting the dataset con duplicati into features and target variable
@@ -177,9 +177,9 @@ def model_dt(df_dirty, df_original):
     
     plot_decision_tree(decision_tree_model,df_original.columns,)
     plot_feature_importance_decision_tree(decision_tree_model, X_train_dirty)
-    plot_roc_curve(y_test_original, decision_tree_model, X_test_original)
+    y_pred_prob, y_test = plot_roc_curve(y_test_original, decision_tree_model, X_test_original)
     plot_confusion_matrix(y_test_original, y_pred_original)
-    return decision_tree_model
+    return y_pred_prob, y_test, decision_tree_model
 
 
 def plot_roc_curve_svm(y_test, classifier, X_test):

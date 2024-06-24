@@ -102,7 +102,6 @@ def k_fold_cross_validation_dt(model, df):
     # Show the plot
     plt.legend()
     plt.show()
-    return mean_accuracy, confidence_interval
 
 def model_svm(df_dirty, df_original):
     continuous_features = ['age', 'bmi', 'avg_glucose_level']
@@ -146,21 +145,21 @@ def model_svm(df_dirty, df_original):
     print(f"Best parameters found: {best_params}")
     y_pred_original = grid_search.predict(X_test_original)
     print("Classification Report on Original Test Set:")
-    print(classification_report(y_test_original, y_pred_original))
+    class_report = classification_report(y_test_original, y_pred_original)
+    print(class_report)
     y_pred_prob, y_test = plot_roc_curve_svm(y_test_original, grid_search, X_test_original)
     plt.show()
     plot_confusion_matrix(y_test_original, y_pred_original)
     plt.show()
+    return y_pred_prob, y_test, class_report, grid_search
     
-    return y_pred_prob, y_test, grid_search
-    
-def model_dt(df_dirty, df_original):
-    # Splitting the dataset con duplicati into features and target variable
+def model_dt(df_dirty, df_clean):
+    # Splitting the dataset into features and target variable
     X_dirty = df_dirty.drop('stroke', axis=1)
     y_dirty = df_dirty['stroke']
     
-    X_original = df_original.drop('stroke', axis=1)
-    y_original = df_original['stroke']
+    X_original = df_clean.drop('stroke', axis=1)
+    y_original = df_clean['stroke']
 
     X_train_original, X_test_original, y_train_original, y_test_original = train_test_split(X_original, y_original, test_size=0.3, random_state=42)
 
@@ -171,16 +170,16 @@ def model_dt(df_dirty, df_original):
     decision_tree_model.fit(X_train_dirty, y_train_dirty)
     y_pred_original = decision_tree_model.predict(X_test_original)
     
-
     # Printing performance on the test set original
     print("Classification Report on Test Set - original:")
-    print(classification_report(y_test_original, y_pred_original))
+    class_report = classification_report(y_test_original, y_pred_original)
+    print(class_report)
     
-    plot_decision_tree(decision_tree_model,df_original.columns,)
+    plot_decision_tree(decision_tree_model,df_clean.columns,)
     plot_feature_importance_decision_tree(decision_tree_model, X_train_dirty)
     y_pred_prob, y_test = plot_roc_curve(y_test_original, decision_tree_model, X_test_original)
     plot_confusion_matrix(y_test_original, y_pred_original)
-    return y_pred_prob, y_test, decision_tree_model
+    return y_pred_prob, y_test, class_report, decision_tree_model
 
 
 def plot_roc_curve_svm(y_test, classifier, X_test):
@@ -269,55 +268,18 @@ def decision_tree(df):
     decision_tree_model = DecisionTreeClassifier(max_depth=10, random_state=0)
     decision_tree_model.fit(X_train, y_train)
     print("\n--- Prestazioni del modello Decision Tree applicato al set di Test: \n")
-    pred_train = decision_tree_model.predict(X_train)
     pred_test = decision_tree_model.predict(X_test)
-    
-    # Printing performance on the training set
-    print("Classification Report on Training Set")
-    print(classification_report(y_train, pred_train))
 
     # Printing performance on the test set
     print("Classification Report on Test Set:")
-    print(classification_report(y_test, pred_test))
+    class_report_test = classification_report(y_test, pred_test)
+    print(class_report_test)
     
     plot_decision_tree(decision_tree_model,df.columns)
     plot_feature_importance_decision_tree(decision_tree_model, X_train)
     y_pred_prob, y_test = plot_roc_curve(y_test, decision_tree_model, X_test)
     plot_confusion_matrix(y_test, pred_test)
-    return y_pred_prob, y_test, decision_tree_model
-
-def SVM_2(df):    
-    # Split the original dataset into features and target variable
-    X = df.drop('stroke', axis=1)
-    y = df['stroke']
-    
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
-
-    # Initialize SVM model
-    svm_model = SVC(kernel='linear', random_state=0)
-    svm_model.fit(X_train, y_train)
-
-    # Predict on the dirty test set
-    pred_train = svm_model.predict(X_train)
-    
-    # Printing performance on the test set
-    print("Classification Report Training Set:")
-    print(classification_report(y_train, pred_train))
-
-    # Predict on the original test set
-    pred_test = svm_model.predict(X_test)
-    
-    # Printing performance on the test set
-    print("Classification Report on Test Set:")
-    print(classification_report(y_test, pred_test))
-    
-    # Plot ROC curve
-    y_pred_prob, y_test = plot_roc_curve_svm(y_test, svm_model, X_test)
-    
-    # Plot confusion matrix
-    plot_confusion_matrix(y_test, pred_test)
-    
-    return y_pred_prob, y_test, svm_model    
+    return y_pred_prob, y_test, class_report_test, decision_tree_model
 
 def SVM(df):
     continuous_features = ['age', 'bmi', 'avg_glucose_level']
@@ -359,10 +321,11 @@ def SVM(df):
     print(f"Best parameters found: {best_params}")
     y_pred_original = grid_search.predict(X_test)
     print("Classification Report on Original Test Set:")
-    print(classification_report(y_test, y_pred_original))
+    class_report = classification_report(y_test, y_pred_original)
+    print(class_report)
     y_pred_prob, y_test = plot_roc_curve_svm(y_test, grid_search, X_test)
     plt.show()
     plot_confusion_matrix(y_test, y_pred_original)
     plt.show()
     
-    return y_pred_prob, y_test, grid_search
+    return y_pred_prob, y_test, class_report, grid_search

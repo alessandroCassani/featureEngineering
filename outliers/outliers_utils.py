@@ -53,7 +53,7 @@ def outliers_replace(df, feature, percentage):
 def add_categorical_outliers(feature, percentage, df):
     # Calculates the outlier value for the specified column
     outlier_value = df[feature].value_counts().idxmin()
-    print("Valore meno frequente: ", outlier_value)
+    print("Least frequent value: ", outlier_value)
 
     n_rows = int(len(df) * (percentage / 100))
 

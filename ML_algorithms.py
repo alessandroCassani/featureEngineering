@@ -130,7 +130,6 @@ def model_svm(df_dirty, df_original):
     y_dirty = df_dirty['stroke']
     X_train_dirty, X_test_dirty, y_train_dirty, y_test_dirty = train_test_split(X_dirty, y_dirty, test_size=0.3, random_state=42)
     svm_model = SVC(kernel='rbf', probability=True, random_state=0)
-
     pipeline = Pipeline(steps=[
         ('preprocessor', preprocessor),
         ('classifier', svm_model)

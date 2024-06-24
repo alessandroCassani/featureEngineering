@@ -115,13 +115,13 @@ def model_svm(df_dirty, df_original):
     print("Classification Report on Original Test Set:")
     print(classification_report(y_test_original, y_pred_original))
 
-    plot_roc_curve_svm(y_test_original, grid_search, X_test_original)
+    y_pred_prob, y_test = plot_roc_curve_svm(y_test_original, grid_search, X_test_original)
     plt.show()
 
     plot_confusion_matrix(y_test_original, y_pred_original)
     plt.show()
 
-    return grid_search
+    return y_pred_prob, y_test, grid_search
 
 def plot_roc_curve_svm(y_test, classifier, X_test):
     y_pred_prob = classifier.predict_proba(X_test)[:, 1]  
@@ -137,6 +137,7 @@ def plot_roc_curve_svm(y_test, classifier, X_test):
     plt.legend(loc="lower right")
     plt.show()
     print("AUC Score:", roc_auc)
+    return y_pred_prob, y_test
 
 def plot_confusion_matrix(y_test, y_test_pred):
     cm = confusion_matrix(y_test, y_test_pred)
